@@ -1,0 +1,148 @@
+<!-- 设置页面 -->
+<view class="page-settings">
+
+  <!-- Cloud Gateway 配置 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">🌐</text>
+      <text>Cloud Gateway</text>
+    </view>
+
+    <view class="mqtt-status-bar">
+      <view class="mqtt-status-left">
+        <view class="status-dot {{cloudOnline && rkOnline ? 'online' : 'offline'}}"></view>
+        <text class="mqtt-status-text">{{cloudOnline && rkOnline ? '主链路在线' : '主链路异常'}}</text>
+      </view>
+      <view class="mqtt-actions">
+        <view class="mqtt-btn connect" bindtap="refreshHealth">
+          <text>刷新</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">REST 地址</text>
+      <input class="form-input" disabled value="{{baseUrl}}" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">状态流</text>
+      <input class="form-input" disabled value="{{wsStateUrl}}" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">公网 Token</text>
+      <input class="form-input" password placeholder="用于写接口，留空则只读" value="{{apiToken}}" bindinput="onInputChange" data-field="apiToken" />
+    </view>
+    <view class="save-config-btn" bindtap="saveApiToken">
+      <text>保存 Token</text>
+    </view>
+    <view class="health-grid">
+      <view class="health-chip {{cloudOnline ? 'ok' : 'bad'}}">云端 {{cloudOnline ? '在线' : '离线'}}</view>
+      <view class="health-chip {{rkOnline ? 'ok' : 'bad'}}">RK3588 {{rkOnline ? '在线' : '离线'}}</view>
+      <view class="health-chip {{publicControlEnabled ? 'ok' : 'warn'}}">公网控制 {{publicControlEnabled ? '开启' : '关闭'}}</view>
+    </view>
+    <view class="health-detail">{{healthDetail}}</view>
+  </view>
+
+  <!-- MQTT 兼容配置 -->
+  <view class="card legacy-card">
+    <view class="card-title">
+      <text class="title-icon">🔌</text>
+      <text>Legacy MQTT</text>
+    </view>
+
+    <view class="mqtt-status-bar">
+      <view class="mqtt-status-left">
+        <view class="status-dot {{mqttConnected ? 'online' : 'offline'}}"></view>
+        <text class="mqtt-status-text">{{mqttConnected ? '备用通道已连接' : '备用通道未连接'}}</text>
+      </view>
+      <view class="mqtt-actions">
+        <view class="mqtt-btn {{mqttConnected ? 'disconnect' : 'connect'}}" bindtap="toggleMQTT">
+          <text>{{mqttConnected ? '断开' : '连接'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="legacy-note">当前 RK3588 不提供 MQTT Broker，此处仅保留兼容入口。</view>
+
+    <view class="form-group">
+      <text class="form-label">Broker 地址</text>
+      <input class="form-input" placeholder="备用 WSS Broker 地址" value="{{brokerUrl}}" bindinput="onInputChange" data-field="brokerUrl" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">用户名</text>
+      <input class="form-input" placeholder="可选" value="{{mqttUsername}}" bindinput="onInputChange" data-field="mqttUsername" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">密码</text>
+      <input class="form-input" password placeholder="可选" value="{{mqttPassword}}" bindinput="onInputChange" data-field="mqttPassword" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">订阅主题</text>
+      <input class="form-input" placeholder="备用订阅主题" value="{{subscribeTopic}}" bindinput="onInputChange" data-field="subscribeTopic" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">发布主题</text>
+      <input class="form-input" placeholder="备用发布主题" value="{{publishTopic}}" bindinput="onInputChange" data-field="publishTopic" />
+    </view>
+
+    <view class="save-config-btn" bindtap="saveConfig">
+      <text>保存 Legacy MQTT 配置</text>
+    </view>
+  </view>
+
+  <!-- 告警中心 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">🔔</text>
+      <text>告警中心</text>
+      <text class="alarm-count" wx:if="{{alarms.length > 0}}">{{alarms.length}}</text>
+    </view>
+
+    <view class="alarm-list" wx:if="{{alarms.length > 0}}">
+      <view class="alarm-item" wx:for="{{alarms}}" wx:key="index">
+        <view class="alarm-time">{{formatTime(item.time / 1000)}}</view>
+        <view class="alarm-msg">{{item.message}}</view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">🔔</text>
+      <text class="empty-text">暂无告警记录</text>
+    </view>
+  </view>
+
+  <!-- 关于 -->
+  <view class="card about-card">
+    <view class="card-title">
+      <text class="title-icon">ℹ️</text>
+      <text>关于</text>
+    </view>
+    <view class="about-info">
+      <view class="about-row">
+        <text class="about-label">应用名称</text>
+        <text class="about-value">灵巡 Sentinel</text>
+      </view>
+      <view class="about-row">
+        <text class="about-label">版本</text>
+        <text class="about-value">v1.0.0</text>
+      </view>
+      <view class="about-row">
+        <text class="about-label">机器人平台</text>
+        <text class="about-value">RK3588 + RT-Thread</text>
+      </view>
+      <view class="about-row">
+        <text class="about-label">通信协议</text>
+        <text class="about-value">REST + WebSocket</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 清除缓存 -->
+  <view class="card clear-cache-card" bindtap="clearCache">
+    <view class="clear-cache-row">
+      <text class="clear-cache-icon">🗑️</text>
+      <text>清除本地缓存</text>
+    </view>
+  </view>
+
+</view>

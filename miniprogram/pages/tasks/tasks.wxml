@@ -1,0 +1,85 @@
+<!-- 任务中心页面 -->
+<view class="page-tasks">
+
+  <view class="control-banner {{publicControlEnabled && hasToken ? 'ready' : 'locked'}}">
+    <text>{{publicControlEnabled ? '公网控制已开启' : '公网控制未开启'}}</text>
+    <text class="control-banner-sub">{{hasToken ? 'Token 已保存' : '未保存 Token，任务按钮仅作预览'}}</text>
+  </view>
+
+  <!-- 当前任务 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">📋</text>
+      <text>当前任务</text>
+    </view>
+    <view class="current-task" wx:if="{{currentTask}}">
+      <text class="task-type-icon">{{getTaskTypeIcon(currentTask.type)}}</text>
+      <view class="task-info">
+        <text class="task-type">{{getTaskTypeText(currentTask.type)}}</text>
+        <text class="task-desc">ID: {{currentTask.id}} · {{formatRelativeTime(currentTask.timestamp)}}</text>
+      </view>
+      <view class="task-status status-tag {{currentTask.status}}">{{getStatusText(currentTask.status)}}</view>
+    </view>
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无进行中的任务</text>
+    </view>
+  </view>
+
+  <!-- 快捷创建任务 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">➕</text>
+      <text>新建任务</text>
+    </view>
+    <view class="task-create-grid">
+      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="patrol">
+        <text class="tcb-icon">🔍</text>
+        <text class="tcb-label">巡逻任务</text>
+      </view>
+      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="delivery">
+        <text class="tcb-icon">📦</text>
+        <text class="tcb-label">配送任务</text>
+      </view>
+      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="inspect">
+        <text class="tcb-icon">🔧</text>
+        <text class="tcb-label">巡检任务</text>
+      </view>
+      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="charge">
+        <text class="tcb-icon">⚡</text>
+        <text class="tcb-label">返回充电</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史任务列表 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">🕐</text>
+      <text>历史任务</text>
+      <text class="card-subtitle">最近10条</text>
+    </view>
+
+    <view class="task-list" wx:if="{{tasks.length > 0}}">
+      <view class="task-item" wx:for="{{tasks}}" wx:key="id">
+        <view class="task-item-left">
+          <text class="task-item-icon">{{getTaskTypeIcon(item.type)}}</text>
+          <view class="task-item-info">
+            <text class="task-item-type">{{getTaskTypeText(item.type)}}</text>
+            <text class="task-item-time">{{formatRelativeTime(item.timestamp)}}</text>
+          </view>
+        </view>
+        <view class="task-item-right">
+          <view class="status-tag {{item.status}}">{{getStatusText(item.status)}}</view>
+          <view class="task-cancel-btn" wx:if="{{item.status === 'pending' || item.status === 'running'}}" bindtap="cancelTask" data-id="{{item.id}}" data-type="{{item.type}}">取消</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">📄</text>
+      <text class="empty-text">暂无历史任务</text>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,7 @@
+{
+  "desc": "灵巡Sentinel机器人监控小程序",
+  "rules": [{
+    "action": "allow",
+    "page": "*"
+  }]
+}

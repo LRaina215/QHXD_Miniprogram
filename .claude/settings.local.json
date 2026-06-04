@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(python3 -c \"from PIL import Image; print\\('Pillow available'\\)\")",
+      "Bash(python3 -c \"print\\('python works'\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); for\\(const n of ['icon_dashboard','icon_tasks','icon_charts','icon_settings']\\){for\\(const s of['','_active']\\){const b=fs.readFileSync\\('E:/Sentinel/miniprogram/'+n+s+'.png'\\);console.log\\(n+s+'.png '+b.readUInt32BE\\(16\\)+'x'+b.readUInt32BE\\(20\\)+' '+\\(b.slice\\(0,8\\).toString\\('hex'\\)==='89504e470d0a1a0a'?'OK':'BAD'\\)\\)}}\")",
+      "Bash(npx vue-tsc *)",
+      "Bash(node ./node_modules/.bin/vue-tsc --noEmit)"
+    ]
+  }
+}

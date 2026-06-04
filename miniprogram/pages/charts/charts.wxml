@@ -1,0 +1,100 @@
+<!-- 数据图表页面 -->
+<view class="page-charts">
+
+  <!-- 时间范围选择 -->
+  <view class="time-filter">
+    <view class="time-option {{timeRange === 3600000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="3600000">1小时</view>
+    <view class="time-option {{timeRange === 21600000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="21600000">6小时</view>
+    <view class="time-option {{timeRange === 86400000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="86400000">24小时</view>
+  </view>
+
+  <!-- 电量曲线 -->
+  <view class="card chart-card">
+    <view class="chart-header">
+      <view class="chart-title">
+        <text class="chart-dot battery"></text>
+        <text>电量</text>
+      </view>
+      <text class="chart-value">{{currentBattery}}%</text>
+    </view>
+    <view class="chart-container">
+      <canvas type="2d" id="batteryChart" class="chart-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 温度曲线 -->
+  <view class="card chart-card">
+    <view class="chart-header">
+      <view class="chart-title">
+        <text class="chart-dot co"></text>
+        <text>温度</text>
+      </view>
+      <text class="chart-value">{{currentTemp}} ℃</text>
+    </view>
+    <view class="chart-container">
+      <canvas type="2d" id="tempChart" class="chart-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 湿度曲线 -->
+  <view class="card chart-card">
+    <view class="chart-header">
+      <view class="chart-title">
+        <text class="chart-dot ch4"></text>
+        <text>湿度</text>
+      </view>
+      <text class="chart-value">{{currentHumidity}} %</text>
+    </view>
+    <view class="chart-container">
+      <canvas type="2d" id="humidityChart" class="chart-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 空气质量曲线 -->
+  <view class="card chart-card">
+    <view class="chart-header">
+      <view class="chart-title">
+        <text class="chart-dot aqi"></text>
+        <text>空气质量(AQI)</text>
+      </view>
+      <text class="chart-value">{{currentAQI}}</text>
+    </view>
+    <view class="chart-container">
+      <canvas type="2d" id="aqiChart" class="chart-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">📊</text>
+      <text>数据统计</text>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-label">缓存点数</text>
+        <text class="stat-value">{{dataCounts.battery}}</text>
+        <text class="stat-desc">电量</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">缓存点数</text>
+        <text class="stat-value">{{dataCounts.temperature}}</text>
+        <text class="stat-desc">温度</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">缓存点数</text>
+        <text class="stat-value">{{dataCounts.humidity}}</text>
+        <text class="stat-desc">湿度</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">缓存点数</text>
+        <text class="stat-value">{{dataCounts.airQuality}}</text>
+        <text class="stat-desc">AQI</text>
+      </view>
+    </view>
+    <view class="clear-data-btn" bindtap="clearData">
+      <text>清空缓存数据</text>
+    </view>
+  </view>
+
+</view>

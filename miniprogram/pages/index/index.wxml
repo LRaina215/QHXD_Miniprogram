@@ -1,0 +1,233 @@
+<!-- 首页：仪表盘 -->
+<view class="page-dashboard">
+
+  <!-- 顶部状态栏 -->
+  <view class="status-bar">
+    <view class="status-left">
+      <view class="status-dot {{restOnline || wsConnected ? 'online' : 'offline'}}"></view>
+      <text class="status-text">{{restOnline || wsConnected ? '在线' : '离线'}}</text>
+    </view>
+    <view class="status-right">
+      <text class="update-time">来源: {{dataSource}} · {{lastUpdateTime}}</text>
+    </view>
+  </view>
+
+  <view class="gateway-strip">
+    <view class="gateway-item {{cloudOnline ? 'ok' : 'bad'}}">云端 {{cloudOnline ? '在线' : '离线'}}</view>
+    <view class="gateway-item {{rkOnline ? 'ok' : 'bad'}}">RK3588 {{rkOnline ? '在线' : '离线'}}</view>
+    <view class="gateway-item {{wsConnected ? 'ok' : 'warn'}}">WSS {{wsConnected ? '已连接' : '轮询'}}</view>
+    <view class="gateway-item {{publicControlEnabled ? 'ok' : 'warn'}}">控制 {{publicControlEnabled ? '开启' : '关闭'}}</view>
+  </view>
+
+  <view class="stale-banner" wx:if="{{staleWarning}}">
+    <text>{{staleWarning}}</text>
+  </view>
+
+  <view class="stale-banner error" wx:if="{{lastError}}">
+    <text>{{lastError}}</text>
+  </view>
+
+  <!-- 告警横幅 -->
+  <view class="alert-banner {{alarmActive ? 'active' : ''}}" wx:if="{{alarmActive}}" bindtap="goToAlarms">
+    <text class="alert-icon">⚠️</text>
+    <text class="alert-text">{{alarmMessage}}</text>
+    <text class="alert-arrow">›</text>
+  </view>
+
+  <!-- 实时图像卡片 -->
+  <view class="card image-card">
+    <view class="card-title">
+      <text class="title-icon">📷</text>
+      <text>实时运行图像</text>
+      <text class="image-tag" wx:if="{{hasImage}}">实时</text>
+    </view>
+    <view class="image-container">
+      <image
+        class="robot-image {{imageFadeIn ? 'fade-in' : ''}}"
+        src="{{imageUrl}}"
+        mode="aspectFit"
+        bindtap="previewImage"
+        binderror="onImageError"
+        wx:if="{{imageUrl && hasImage}}"
+      />
+      <view class="image-placeholder" wx:else>
+        <text class="placeholder-icon">📷</text>
+        <text class="placeholder-text">{{frameStatusText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 环境监测卡片 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">🌿</text>
+      <text>环境监测</text>
+      <view class="flame-indicator {{sensors.flame ? 'alert' : ''}}" wx:if="{{sensors.flame !== undefined}}">
+        <text class="flame-dot"></text>
+        <text>{{sensors.status}}</text>
+      </view>
+    </view>
+    <view class="sensor-grid">
+      <view class="sensor-item">
+        <text class="sensor-label">温度</text>
+        <text class="sensor-value">{{sensors.temperature}} <text class="sensor-unit">℃</text></text>
+        <view class="sensor-bar">
+          <view class="sensor-bar-fill co" style="width: {{sensors.temperature === '--' ? 0 : 55}}%;"></view>
+        </view>
+      </view>
+      <view class="sensor-item">
+        <text class="sensor-label">湿度</text>
+        <text class="sensor-value">{{sensors.humidity}} <text class="sensor-unit">%</text></text>
+        <view class="sensor-bar">
+          <view class="sensor-bar-fill ch4" style="width: {{sensors.humidity === '--' ? 0 : 60}}%;"></view>
+        </view>
+      </view>
+      <view class="sensor-item">
+        <text class="sensor-label">本体传感器</text>
+        <text class="sensor-value muted-value">{{sensors.status}}</text>
+        <view class="air-quality-level">CO/CH₄/AQI 未接入</view>
+      </view>
+      <view class="sensor-item">
+        <text class="sensor-label">YOLO 识别</text>
+        <text class="sensor-value perception-value">{{perception.detection || '暂无视觉数据'}}</text>
+        <view class="sensor-bar" wx:if="{{perception.confidence !== undefined}}">
+          <view class="sensor-bar-fill confidence" style="width: {{confidenceBarWidth}}%;"></view>
+        </view>
+        <text class="confidence-text" wx:if="{{perception.confidence !== undefined}}">{{confidencePct}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 机器人状态卡片 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">🤖</text>
+      <text>机器人状态</text>
+      <view class="status-tag {{robot.status}}">{{statusText}}</view>
+    </view>
+    <view class="robot-grid">
+      <view class="robot-info-item">
+        <text class="info-label">电量</text>
+        <view class="battery-container">
+          <view class="battery-outer">
+            <view class="battery-inner" style="width: {{batteryBarWidth}}%; background: {{batteryColor}};"></view>
+          </view>
+          <text class="battery-text" style="color: {{batteryColor}};">{{robot.battery}}%</text>
+        </view>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">急停</text>
+        <text class="info-value {{robot.emergency_stop ? 'danger' : 'safe'}}">{{robot.emergency_stop ? '⚠️ 已触发' : '✓ 正常'}}</text>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">故障码</text>
+        <text class="info-value">{{robot.fault_code !== undefined ? robot.fault_code : '--'}}</text>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">运行时长</text>
+        <text class="info-value">{{robot.running_hours !== undefined ? robot.running_hours + 'h' : '--'}}</text>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">固件版本</text>
+        <text class="info-value version">{{robot.firmware_version || '--'}}</text>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">剩余距离</text>
+        <text class="info-value">{{robot.remaining_distance !== undefined ? robot.remaining_distance + 'm' : '--'}}</text>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">当前任务</text>
+        <text class="info-value">{{currentTaskText}}</text>
+      </view>
+      <view class="robot-info-item">
+        <text class="info-label">任务进度</text>
+        <text class="info-value">{{currentTaskProgress}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导航信息卡片 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">🧭</text>
+      <text>导航信息</text>
+      <text class="target-name" wx:if="{{robot.current_target && robot.current_target !== '--'}}">{{robot.current_target}}</text>
+    </view>
+    <view class="nav-info">
+      <view class="nav-pose">
+        <text class="pose-label">位姿</text>
+        <text class="pose-value">x: {{formatDecimal(robot.pose.x)}}  y: {{formatDecimal(robot.pose.y)}}  偏角: {{formatYaw(robot.pose.yaw)}}</text>
+      </view>
+      <view class="nav-status">
+        <text class="nav-status-label">导航状态</text>
+        <text class="nav-status-value {{robot.status}}">{{statusText}}</text>
+      </view>
+    </view>
+    <!-- 导航简化示意图 -->
+    <view class="nav-canvas-container">
+      <canvas type="2d" id="navCanvas" class="nav-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 快捷指令卡片 -->
+  <view class="card">
+    <view class="card-title">
+      <text class="title-icon">⚡</text>
+      <text>快捷指令</text>
+    </view>
+    <view class="command-grid">
+      <view class="cmd-btn cmd-auto" bindtap="sendCommand" data-cmd="auto">
+        <text class="cmd-icon">▶️</text>
+        <text class="cmd-label">巡检</text>
+      </view>
+      <view class="cmd-btn cmd-stop" bindtap="sendCommand" data-cmd="stop">
+        <text class="cmd-icon">⏹️</text>
+        <text class="cmd-label">停止</text>
+      </view>
+      <view class="cmd-btn cmd-go" bindtap="sendCommand" data-cmd="go_to_1">
+        <text class="cmd-icon">1️⃣</text>
+        <text class="cmd-label">一号点</text>
+      </view>
+      <view class="cmd-btn cmd-go" bindtap="sendCommand" data-cmd="go_to_2">
+        <text class="cmd-icon">2️⃣</text>
+        <text class="cmd-label">二号点</text>
+      </view>
+      <view class="cmd-btn cmd-charge" bindtap="sendCommand" data-cmd="back_charge">
+        <text class="cmd-icon">🔋</text>
+        <text class="cmd-label">回充</text>
+      </view>
+      <view class="cmd-btn cmd-emergency" bindtap="emergencyStop">
+        <text class="cmd-icon">🛑</text>
+        <text class="cmd-label">急停</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 语音/文本指令面板 -->
+  <view class="card voice-card">
+    <view class="card-title">
+      <text class="title-icon">🎤</text>
+      <text>指令输入</text>
+    </view>
+    <view class="voice-input-row">
+      <input
+        class="voice-input"
+        placeholder="输入指令，如: 去一号点"
+        value="{{voiceText}}"
+        bindinput="onVoiceInput"
+        bindconfirm="sendVoiceCommand"
+        confirm-type="send"
+      />
+      <view class="mic-btn {{isRecording ? 'recording' : ''}}" bindtap="startVoiceRecognition">
+        <text class="mic-icon">🎤</text>
+      </view>
+      <view class="send-btn" bindtap="sendVoiceCommand">
+        <text class="send-icon">发送</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提示消息 -->
+  <view class="toast {{toastVisible ? 'show' : ''}}">{{toastMessage}}</view>
+
+</view>

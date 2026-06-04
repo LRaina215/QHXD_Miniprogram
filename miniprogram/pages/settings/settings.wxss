@@ -1,0 +1,105 @@
+/* 设置 - 简约风格 */
+.page-settings { padding-bottom: 60rpx; }
+
+/* MQTT 状态栏 */
+.mqtt-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #F9F9FB; border-radius: 12rpx; padding: 18rpx 20rpx; margin-bottom: 18rpx;
+}
+.mqtt-status-left { display: flex; align-items: center; }
+.status-dot { width: 12rpx; height: 12rpx; border-radius: 50%; margin-right: 8rpx; }
+.status-dot.online  { background: #34C759; }
+.status-dot.offline { background: #C7C7CC; }
+.mqtt-status-text { font-size: 26rpx; font-weight: 500; color: #1C1C1E; }
+.mqtt-actions { display: flex; gap: 8rpx; }
+.mqtt-btn {
+  padding: 10rpx 28rpx; border-radius: 10rpx;
+  font-size: 24rpx; font-weight: 500;
+}
+.mqtt-btn:active { opacity: 0.85; }
+.mqtt-btn.connect    { background: #007AFF; color: #FFFFFF; }
+.mqtt-btn.disconnect { background: #FEE8E7; color: #C42E2A; }
+
+/* 表单 */
+.form-group { margin-bottom: 16rpx; }
+.form-label { font-size: 22rpx; color: #AEAEB2; display: block; margin-bottom: 6rpx; }
+.form-input {
+  width: 100%; height: 66rpx;
+  background: #F9F9FB; border-radius: 10rpx;
+  padding: 0 18rpx; font-size: 24rpx; color: #1C1C1E;
+  border: 1rpx solid transparent; box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: #007AFF; }
+.save-config-btn {
+  margin-top: 20rpx; text-align: center;
+  background: #1C1C1E; color: #FFFFFF;
+  padding: 18rpx; border-radius: 12rpx;
+  font-size: 24rpx; font-weight: 500;
+}
+.save-config-btn:active { opacity: 0.85; }
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8rpx;
+  margin-top: 14rpx;
+}
+.health-chip {
+  min-height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  background: #F2F2F7;
+  color: #6E6E73;
+}
+.health-chip.ok { color: #248A3D; background: #E3F5E8; }
+.health-chip.warn { color: #B87D2B; background: #FFF3E0; }
+.health-chip.bad { color: #C42E2A; background: #FEE8E7; }
+.health-detail {
+  margin-top: 10rpx;
+  color: #8E8E93;
+  font-size: 21rpx;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.legacy-card { opacity: 0.96; }
+.legacy-note {
+  margin-bottom: 14rpx;
+  padding: 12rpx 14rpx;
+  border-radius: 10rpx;
+  color: #6E6E73;
+  background: #F9F9FB;
+  font-size: 22rpx;
+}
+
+/* 告警列表 */
+.alarm-count {
+  margin-left: auto; background: #C42E2A; color: #FFFFFF;
+  font-size: 18rpx; font-weight: 600; padding: 1rpx 12rpx;
+  border-radius: 16rpx; min-width: 28rpx; text-align: center;
+}
+.alarm-list { display: flex; flex-direction: column; gap: 6rpx; max-height: 360rpx; overflow-y: auto; }
+.alarm-item {
+  display: flex; flex-direction: column; padding: 14rpx 18rpx;
+  background: #FFF8F6; border-left: 4rpx solid #C42E2A; border-radius: 6rpx;
+}
+.alarm-time { font-size: 18rpx; color: #AEAEB2; margin-bottom: 2rpx; }
+.alarm-msg { font-size: 24rpx; color: #3A3A3C; font-weight: 500; }
+
+/* 关于 */
+.about-info { display: flex; flex-direction: column; gap: 8rpx; }
+.about-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10rpx 0; border-bottom: 1rpx solid #F2F2F7;
+}
+.about-row:last-child { border-bottom: none; }
+.about-label { font-size: 24rpx; color: #8E8E93; }
+.about-value { font-size: 24rpx; color: #1C1C1E; font-weight: 500; }
+
+/* 清缓存 */
+.clear-cache-row { display: flex; align-items: center; justify-content: center; font-size: 26rpx; color: #C42E2A; }
+.clear-cache-icon { margin-right: 10rpx; font-size: 28rpx; }

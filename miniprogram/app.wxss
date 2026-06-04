@@ -1,0 +1,95 @@
+/* 全局样式 - 简约克制 · 高级感浅色主题 */
+
+/* 页面基础 */
+page {
+  background-color: #F2F2F7;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'PingFang SC', sans-serif;
+  color: #1C1C1E;
+  font-size: 28rpx;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 卡片 */
+.card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin: 12rpx 20rpx;
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1C1C1E;
+  letter-spacing: -0.2rpx;
+  margin-bottom: 18rpx;
+  display: flex;
+  align-items: center;
+}
+
+.card-title .title-icon {
+  font-size: 28rpx;
+  margin-right: 10rpx;
+}
+
+/* 状态标签 - 极简风格 */
+.status-tag {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 10rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+  letter-spacing: 0.2rpx;
+}
+
+.status-tag.online     { background: #E3F5E8; color: #248A3D; }
+.status-tag.offline    { background: #F2F2F7; color: #8E8E93; }
+.status-tag.charging   { background: #FFF3E0; color: #C76B15; }
+.status-tag.navigating { background: #E8F0FE; color: #1A6DD4; }
+.status-tag.error      { background: #FEE8E7; color: #D32F2F; }
+.status-tag.idle       { background: #F2F2F7; color: #8E8E93; }
+.status-tag.running    { background: #E8F0FE; color: #1A6DD4; }
+.status-tag.pending    { background: #FFF3E0; color: #C76B15; }
+.status-tag.completed  { background: #E3F5E8; color: #248A3D; }
+.status-tag.cancelled  { background: #F2F2F7; color: #8E8E93; }
+
+/* 通用按钮 */
+.btn-primary {
+  background: #007AFF;
+  color: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 18rpx 30rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  border: none;
+  text-align: center;
+  letter-spacing: -0.1rpx;
+}
+.btn-primary:active { opacity: 0.85; }
+
+.btn-secondary {
+  background: #F2F2F7;
+  color: #007AFF;
+  border-radius: 12rpx;
+  padding: 18rpx 30rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  border: none;
+  text-align: center;
+}
+.btn-secondary:active { background: #E5E5EA; }
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 40rpx;
+}
+.empty-icon { font-size: 40rpx; opacity: 0.25; margin-bottom: 10rpx; }
+.empty-text { font-size: 24rpx; color: #C7C7CC; }
+
+/* 分隔线 */
+.divider { height: 1rpx; background: #E5E5EA; margin: 16rpx 0; }

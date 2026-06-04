@@ -1,0 +1,60 @@
+/* 任务中心 - 简约风格 */
+.page-tasks { padding-bottom: 40rpx; }
+
+.control-banner {
+  margin: 14rpx 20rpx 0;
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+.control-banner.ready { color: #248A3D; background: #E3F5E8; }
+.control-banner.locked { color: #B87D2B; background: #FFF3E0; }
+.control-banner-sub { color: inherit; opacity: 0.78; font-size: 20rpx; font-weight: 500; }
+
+/* 当前任务 */
+.current-task {
+  display: flex; align-items: center;
+  background: #F9F9FB; border-radius: 12rpx; padding: 20rpx;
+}
+.task-type-icon { font-size: 36rpx; margin-right: 14rpx; }
+.task-info { flex: 1; }
+.task-type { font-size: 26rpx; font-weight: 600; color: #1C1C1E; display: block; }
+.task-desc { font-size: 20rpx; color: #AEAEB2; margin-top: 2rpx; display: block; }
+.task-status { margin-left: 10rpx; }
+
+/* 新建任务 */
+.task-create-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10rpx; }
+.task-create-btn {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 22rpx 10rpx; background: #F9F9FB;
+  border-radius: 12rpx; border: 1rpx solid #F0F0F3;
+  transition: all 0.15s;
+}
+.task-create-btn:active { background: #E8E8ED; }
+.task-create-btn.disabled { opacity: 0.55; }
+.tcb-icon { font-size: 32rpx; margin-bottom: 6rpx; }
+.tcb-label { font-size: 20rpx; color: #3A3A3C; font-weight: 500; }
+
+/* 历史任务 */
+.task-list { display: flex; flex-direction: column; gap: 6rpx; }
+.task-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16rpx 18rpx; background: #F9F9FB; border-radius: 10rpx;
+}
+.task-item-left { display: flex; align-items: center; flex: 1; }
+.task-item-icon { font-size: 28rpx; margin-right: 10rpx; }
+.task-item-info { flex: 1; }
+.task-item-type { font-size: 24rpx; font-weight: 500; color: #1C1C1E; display: block; }
+.task-item-time { font-size: 18rpx; color: #AEAEB2; display: block; margin-top: 1rpx; }
+.task-item-right { display: flex; align-items: center; gap: 10rpx; }
+.task-cancel-btn {
+  font-size: 20rpx; color: #C42E2A; padding: 4rpx 14rpx;
+  border-radius: 8rpx; background: #FEE8E7;
+}
+.task-cancel-btn:active { background: #FFD8D6; }
+
+.card-subtitle { margin-left: auto; font-size: 20rpx; color: #C7C7CC; }
