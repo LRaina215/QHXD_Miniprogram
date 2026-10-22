@@ -19,7 +19,7 @@
     "useIsolateContext": true
   },
   "condition": {},
-  "description": "灵巡Sentinel - 私有配置",
-  "projectname": "Sentinel",
+  "description": "云拓 - 私有配置",
+  "projectname": "YunTuo",
   "libVersion": "3.16.1"
 }

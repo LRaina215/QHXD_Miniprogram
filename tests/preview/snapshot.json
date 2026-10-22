@@ -1,0 +1,1207 @@
+{
+ "store": {
+  "state": {
+   "robot_pose": {
+    "x": 2.838,
+    "y": 1.019,
+    "yaw": -0.5080653452555494,
+    "frame_id": "map",
+    "timestamp": "2026-10-22T12:51:58.146654Z"
+   },
+   "nav_status": {
+    "mode": "auto",
+    "state": "idle",
+    "current_goal": "wp_b",
+    "remaining_distance": null
+   },
+   "task_status": {
+    "task_id": "fpga-go-to-waypoint-aeb0c96824",
+    "task_type": "go_to_waypoint",
+    "state": "cancelled",
+    "progress": 0,
+    "source": "fpga_bridge",
+    "phase": "cancelled",
+    "current_waypoint_id": "wp_b",
+    "waypoint_index": 0,
+    "waypoint_count": 1,
+    "detail": "任务已取消，FPGA 已停车。",
+    "updated_at": "2026-10-22T12:51:56.782270Z"
+   },
+   "device_status": {
+    "battery_percent": 89,
+    "emergency_stop": false,
+    "fault_code": null,
+    "online": true
+   },
+   "env_sensor": {
+    "temperature_c": 25.93,
+    "humidity_percent": 43.92,
+    "status": "offline"
+   },
+   "system_mode": {
+    "mode": "real",
+    "updated_at": "2026-10-22T12:24:19.097061Z"
+   },
+   "detection_status": {
+    "enabled": true,
+    "source": "mock_camera",
+    "model_name": "simulation",
+    "frame_id": "camera_front",
+    "timestamp": "2026-10-22T12:51:58.225333Z",
+    "objects": [],
+    "events": []
+   },
+   "platform_status": {
+    "source": "fpga_bridge",
+    "updated_at": "2026-10-22T12:51:58.024797Z",
+    "nav_link": "mock",
+    "nav_link_kind": "udp:127.0.0.1:9000",
+    "fpga_mode": "idle",
+    "fpga_state": "idle",
+    "loc_state": "mapless",
+    "loc_quality": null,
+    "map_loaded": false,
+    "target_valid": false,
+    "lidar_ok": true,
+    "odom_ok": true,
+    "cmd_vx_mps": 0,
+    "cmd_wz_radps": 0,
+    "fpga_uptime_s": 1670.203,
+    "status_rate_hz": 5,
+    "control_link": "mock",
+    "policy_active": true,
+    "control_estop": false,
+    "control_faults": [],
+    "wheel_left_mps": 0,
+    "wheel_right_mps": 0,
+    "roll_deg": 0,
+    "pitch_deg": -0.391759908541113,
+    "yaw_rate_radps": 0,
+    "height_cmd_m": 0.159912109375,
+    "telemetry_rate_hz": 49.9
+   },
+   "updated_at": "2026-10-22T12:51:58.230393Z"
+  },
+  "nav": {
+   "source": "fpga_bridge",
+   "frame_id": "map",
+   "timestamp": "2026-10-22T12:51:58.146654Z",
+   "sequence": 7912,
+   "map_version": "canvas",
+   "pose": {
+    "x": 2.838,
+    "y": 1.019,
+    "yaw": -0.5080653452555494
+   },
+   "goal": null,
+   "velocity": {
+    "vx": 0,
+    "vy": 0,
+    "wz": 0
+   },
+   "global_path": [],
+   "local_path": [],
+   "nav_state": "idle",
+   "remaining_distance": null,
+   "target": null
+  },
+  "mapMeta": {
+   "map_id": "yuntuo_field",
+   "version": "canvas--1_-3_6_3",
+   "frame_id": "map",
+   "timestamp": "2026-10-22T12:51:51.674860Z",
+   "resolution": 0.1,
+   "width": 70,
+   "height": 60,
+   "origin": {
+    "x": -1,
+    "y": -3,
+    "yaw": 0
+   },
+   "image_url": "/api/navigation/map/image"
+  },
+  "waypoints": [
+   {
+    "waypoint_id": "home",
+    "name": "起点",
+    "aliases": [
+     "起点",
+     "出发点",
+     "返回点",
+     "home",
+     "家"
+    ],
+    "map_id": "yuntuo_field",
+    "pose": {
+     "x": 0,
+     "y": 0,
+     "yaw": 0
+    },
+    "group": "home",
+    "enabled": true,
+    "configured": true
+   },
+   {
+    "waypoint_id": "wp_a",
+    "name": "A 点（台阶区）",
+    "aliases": [
+     "A点",
+     "a点",
+     "A 点",
+     "一号点",
+     "1号点",
+     "台阶区",
+     "台阶"
+    ],
+    "map_id": "yuntuo_field",
+    "pose": {
+     "x": 2,
+     "y": 1.5,
+     "yaw": 0
+    },
+    "group": "patrol",
+    "enabled": true,
+    "configured": true
+   },
+   {
+    "waypoint_id": "wp_b",
+    "name": "B 点（斜坡区）",
+    "aliases": [
+     "B点",
+     "b点",
+     "B 点",
+     "二号点",
+     "2号点",
+     "斜坡区",
+     "斜坡"
+    ],
+    "map_id": "yuntuo_field",
+    "pose": {
+     "x": 3.5,
+     "y": -1.5,
+     "yaw": 0
+    },
+    "group": "patrol",
+    "enabled": true,
+    "configured": true
+   },
+   {
+    "waypoint_id": "wp_c",
+    "name": "C 点（碎石区）",
+    "aliases": [
+     "C点",
+     "c点",
+     "C 点",
+     "三号点",
+     "3号点",
+     "碎石区",
+     "碎石"
+    ],
+    "map_id": "yuntuo_field",
+    "pose": {
+     "x": 4.2,
+     "y": 0,
+     "yaw": 0
+    },
+    "group": "patrol",
+    "enabled": true,
+    "configured": true
+   }
+  ],
+  "trail": [
+   {
+    "x": 2.838,
+    "y": 1.019
+   }
+  ],
+  "events": [
+   {
+    "event_id": "fpga-go-to-waypoint-aeb0c96824:cancelled:4",
+    "task_id": "fpga-go-to-waypoint-aeb0c96824",
+    "event_type": "cancelled",
+    "task_state": "cancelled",
+    "detail": "任务已取消，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.605,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:51:56.782270Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-aeb0c96824:paused:3",
+    "task_id": "fpga-go-to-waypoint-aeb0c96824",
+    "event_type": "paused",
+    "task_state": "paused",
+    "detail": "任务已暂停，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.605,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:51:56.509981Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-aeb0c96824:started:1",
+    "task_id": "fpga-go-to-waypoint-aeb0c96824",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:51:56.235289Z"
+   },
+   {
+    "event_id": "fpga-search-target-31ec83f945:arrived:target",
+    "task_id": "fpga-search-target-31ec83f945",
+    "event_type": "arrived",
+    "task_state": "running",
+    "detail": "已到达「红色水瓶」附近（约 0.80 m）。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 65,
+    "timestamp": "2026-10-22T12:51:55.442389Z"
+   },
+   {
+    "event_id": "fpga-search-target-31ec83f945:completed:6",
+    "task_id": "fpga-search-target-31ec83f945",
+    "event_type": "completed",
+    "task_state": "completed",
+    "detail": "已找到「红色水瓶」并停在其附近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 100,
+    "timestamp": "2026-10-22T12:51:55.442389Z"
+   },
+   {
+    "event_id": "fpga-search-target-31ec83f945:target_found:2",
+    "task_id": "fpga-search-target-31ec83f945",
+    "event_type": "target_found",
+    "task_state": "running",
+    "detail": "发现「红色水瓶」，距离约 0.8 m，FPGA 开始接近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 5,
+    "timestamp": "2026-10-22T12:51:54.443423Z"
+   },
+   {
+    "event_id": "fpga-search-target-31ec83f945:started:1",
+    "task_id": "fpga-search-target-31ec83f945",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:51:53.779181Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-8632f5a9ab:cancelled:4",
+    "task_id": "fpga-go-to-waypoint-8632f5a9ab",
+    "event_type": "cancelled",
+    "task_state": "cancelled",
+    "detail": "任务已取消，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.605,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:42:10.309099Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-8632f5a9ab:paused:3",
+    "task_id": "fpga-go-to-waypoint-8632f5a9ab",
+    "event_type": "paused",
+    "task_state": "paused",
+    "detail": "任务已暂停，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.605,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:42:10.071390Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-8632f5a9ab:started:1",
+    "task_id": "fpga-go-to-waypoint-8632f5a9ab",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:42:09.844330Z"
+   },
+   {
+    "event_id": "fpga-search-target-e1a310467c:arrived:target",
+    "task_id": "fpga-search-target-e1a310467c",
+    "event_type": "arrived",
+    "task_state": "running",
+    "detail": "已到达「红色水瓶」附近（约 0.80 m）。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 49,
+    "timestamp": "2026-10-22T12:42:09.036087Z"
+   },
+   {
+    "event_id": "fpga-search-target-e1a310467c:completed:6",
+    "task_id": "fpga-search-target-e1a310467c",
+    "event_type": "completed",
+    "task_state": "completed",
+    "detail": "已找到「红色水瓶」并停在其附近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 100,
+    "timestamp": "2026-10-22T12:42:09.036087Z"
+   },
+   {
+    "event_id": "fpga-search-target-e1a310467c:target_found:2",
+    "task_id": "fpga-search-target-e1a310467c",
+    "event_type": "target_found",
+    "task_state": "running",
+    "detail": "发现「红色水瓶」，距离约 0.8 m，FPGA 开始接近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 5,
+    "timestamp": "2026-10-22T12:42:08.037150Z"
+   },
+   {
+    "event_id": "fpga-search-target-e1a310467c:started:1",
+    "task_id": "fpga-search-target-e1a310467c",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:42:07.262029Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-dadaf80b23:cancelled:4",
+    "task_id": "fpga-go-to-waypoint-dadaf80b23",
+    "event_type": "cancelled",
+    "task_state": "cancelled",
+    "detail": "任务已取消，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.605,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:35:10.228029Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-dadaf80b23:paused:3",
+    "task_id": "fpga-go-to-waypoint-dadaf80b23",
+    "event_type": "paused",
+    "task_state": "paused",
+    "detail": "任务已暂停，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.605,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:35:09.939558Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-dadaf80b23:started:1",
+    "task_id": "fpga-go-to-waypoint-dadaf80b23",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:35:09.645396Z"
+   },
+   {
+    "event_id": "fpga-search-target-122e09b3e3:arrived:target",
+    "task_id": "fpga-search-target-122e09b3e3",
+    "event_type": "arrived",
+    "task_state": "running",
+    "detail": "已到达「红色水瓶」附近（约 0.80 m）。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 46,
+    "timestamp": "2026-10-22T12:35:08.852101Z"
+   },
+   {
+    "event_id": "fpga-search-target-122e09b3e3:completed:6",
+    "task_id": "fpga-search-target-122e09b3e3",
+    "event_type": "completed",
+    "task_state": "completed",
+    "detail": "已找到「红色水瓶」并停在其附近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 100,
+    "timestamp": "2026-10-22T12:35:08.852101Z"
+   },
+   {
+    "event_id": "fpga-search-target-122e09b3e3:target_found:2",
+    "task_id": "fpga-search-target-122e09b3e3",
+    "event_type": "target_found",
+    "task_state": "running",
+    "detail": "发现「红色水瓶」，距离约 0.8 m，FPGA 开始接近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 5,
+    "timestamp": "2026-10-22T12:35:07.848494Z"
+   },
+   {
+    "event_id": "fpga-search-target-122e09b3e3:started:1",
+    "task_id": "fpga-search-target-122e09b3e3",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:35:07.333341Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-37e972975f:cancelled:4",
+    "task_id": "fpga-go-to-waypoint-37e972975f",
+    "event_type": "cancelled",
+    "task_state": "cancelled",
+    "detail": "任务已取消，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.606,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:26:59.889627Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-37e972975f:paused:3",
+    "task_id": "fpga-go-to-waypoint-37e972975f",
+    "event_type": "paused",
+    "task_state": "paused",
+    "detail": "任务已暂停，FPGA 已停车。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": 2.606,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:26:59.607357Z"
+   },
+   {
+    "event_id": "fpga-go-to-waypoint-37e972975f:started:1",
+    "task_id": "fpga-go-to-waypoint-37e972975f",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+    "source": "fpga_bridge",
+    "waypoint_id": "wp_b",
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:26:59.234906Z"
+   },
+   {
+    "event_id": "fpga-search-target-dfd8a28acd:arrived:target",
+    "task_id": "fpga-search-target-dfd8a28acd",
+    "event_type": "arrived",
+    "task_state": "running",
+    "detail": "已到达「红色水瓶」附近（约 0.82 m）。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 92,
+    "timestamp": "2026-10-22T12:26:58.648858Z"
+   },
+   {
+    "event_id": "fpga-search-target-dfd8a28acd:completed:12",
+    "task_id": "fpga-search-target-dfd8a28acd",
+    "event_type": "completed",
+    "task_state": "completed",
+    "detail": "已找到「红色水瓶」并停在其附近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 100,
+    "timestamp": "2026-10-22T12:26:58.648858Z"
+   },
+   {
+    "event_id": "fpga-search-target-dfd8a28acd:target_found:2",
+    "task_id": "fpga-search-target-dfd8a28acd",
+    "event_type": "target_found",
+    "task_state": "running",
+    "detail": "发现「红色水瓶」，距离约 3.8 m，FPGA 开始接近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 5,
+    "timestamp": "2026-10-22T12:26:51.243588Z"
+   },
+   {
+    "event_id": "fpga-search-target-dfd8a28acd:started:1",
+    "task_id": "fpga-search-target-dfd8a28acd",
+    "event_type": "started",
+    "task_state": "running",
+    "detail": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": null,
+    "progress": 0,
+    "timestamp": "2026-10-22T12:26:50.702106Z"
+   },
+   {
+    "event_id": "fpga-search-target-d28aabb09f:arrived:target",
+    "task_id": "fpga-search-target-d28aabb09f",
+    "event_type": "arrived",
+    "task_state": "running",
+    "detail": "已到达「红色水瓶」附近（约 0.82 m）。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 89,
+    "timestamp": "2026-10-22T09:06:02.602106Z"
+   },
+   {
+    "event_id": "fpga-search-target-d28aabb09f:completed:8",
+    "task_id": "fpga-search-target-d28aabb09f",
+    "event_type": "completed",
+    "task_state": "completed",
+    "detail": "已找到「红色水瓶」并停在其附近。",
+    "source": "fpga_bridge",
+    "waypoint_id": null,
+    "remaining_distance": 0,
+    "progress": 100,
+    "timestamp": "2026-10-22T09:06:02.602106Z"
+   }
+  ]
+ },
+ "pages": {
+  "home": {
+   "navTop": 44,
+   "navHeight": 44,
+   "capsuleGap": 97,
+   "links": [
+    {
+     "key": "rk",
+     "label": "RK3588",
+     "tone": "ok",
+     "value": "在线"
+    },
+    {
+     "key": "nav",
+     "label": "FPGA 导航",
+     "tone": "mock",
+     "value": "模拟"
+    },
+    {
+     "key": "ctl",
+     "label": "FPGA 控制",
+     "tone": "mock",
+     "value": "模拟"
+    },
+    {
+     "key": "cam",
+     "label": "视觉",
+     "tone": "ok",
+     "value": "运行"
+    }
+   ],
+   "banner": "",
+   "bannerTone": "off",
+   "hero": {
+    "idle": false,
+    "title": "前往 B 点（斜坡区）",
+    "eyebrow": "最近任务",
+    "tone": "off",
+    "stateText": "已取消",
+    "phaseText": "",
+    "stepText": "",
+    "detail": "任务已取消，FPGA 已停车。",
+    "progress": 0,
+    "remainingText": "",
+    "icon": "pin",
+    "active": false,
+    "canPause": false,
+    "canResume": false,
+    "canCancel": false,
+    "canHome": true
+   },
+   "hud": [
+    {
+     "k": "速度",
+     "v": "0.00",
+     "u": "m/s"
+    },
+    {
+     "k": "位姿",
+     "v": "2.8, 1.0",
+     "u": "-29°"
+    },
+    {
+     "k": "定位",
+     "v": "无图",
+     "u": ""
+    }
+   ],
+   "platform": {
+    "navTone": "mock",
+    "navLink": "模拟",
+    "ctlTone": "mock",
+    "ctlLink": "模拟",
+    "state": "空闲",
+    "stateTone": "off",
+    "mode": "空闲模式",
+    "vx": "0.00",
+    "wz": "0.00",
+    "loc": "无图",
+    "locSub": "5.0 Hz",
+    "flags": [
+     {
+      "k": "雷达",
+      "v": "yes"
+     },
+     {
+      "k": "里程计",
+      "v": "yes"
+     },
+     {
+      "k": "先验图",
+      "v": "no"
+     },
+     {
+      "k": "视觉目标",
+      "v": "no"
+     }
+    ],
+    "left": "0.00",
+    "right": "0.00",
+    "leftPct": 0,
+    "rightPct": 0,
+    "roll": 0,
+    "pitch": -0.391759908541113,
+    "attText": "0.0° / -0.4°",
+    "policy": "策略运行中",
+    "policyOk": true,
+    "ctlEstop": "控制急停未触发",
+    "ctlEstopBad": false,
+    "faults": ""
+   },
+   "objects": {
+    "meta": "simulation · 20:51:58",
+    "items": [],
+    "locked": false
+   },
+   "events": [
+    {
+     "id": "fpga-go-to-waypoint-aeb0c96824:cancelled:4",
+     "tone": "wait",
+     "text": "任务已取消，FPGA 已停车。",
+     "time": "20:51:56"
+    },
+    {
+     "id": "fpga-go-to-waypoint-aeb0c96824:paused:3",
+     "tone": "wait",
+     "text": "任务已暂停，FPGA 已停车。",
+     "time": "20:51:56"
+    },
+    {
+     "id": "fpga-go-to-waypoint-aeb0c96824:started:1",
+     "tone": "run",
+     "text": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+     "time": "20:51:56"
+    },
+    {
+     "id": "fpga-search-target-31ec83f945:arrived:target",
+     "tone": "ok",
+     "text": "已到达「红色水瓶」附近（约 0.80 m）。",
+     "time": "20:51:55"
+    },
+    {
+     "id": "fpga-search-target-31ec83f945:completed:6",
+     "tone": "ok",
+     "text": "已找到「红色水瓶」并停在其附近。",
+     "time": "20:51:55"
+    }
+   ],
+   "stageView": "map",
+   "mapCtx": "无先验图 · 里程计坐标系",
+   "frameSrc": "",
+   "frameMsg": "正在获取相机画面…",
+   "sheet": {
+    "show": false,
+    "title": "",
+    "rows": [],
+    "loading": false,
+    "error": ""
+   }
+  },
+  "mission": {
+   "tab": "goto",
+   "classes": [
+    {
+     "id": "bottle",
+     "name": "水瓶",
+     "icon": "bottle"
+    },
+    {
+     "id": "cup",
+     "name": "杯子",
+     "icon": "cup"
+    },
+    {
+     "id": "person",
+     "name": "人",
+     "icon": "person"
+    },
+    {
+     "id": "sports ball",
+     "name": "球",
+     "icon": "ball"
+    },
+    {
+     "id": "chair",
+     "name": "椅子",
+     "icon": "chair"
+    },
+    {
+     "id": "backpack",
+     "name": "背包",
+     "icon": "backpack"
+    }
+   ],
+   "colors": [
+    {
+     "id": "red",
+     "name": "红",
+     "hex": "#ff4d5e"
+    },
+    {
+     "id": "green",
+     "name": "绿",
+     "hex": "#3ddc84"
+    },
+    {
+     "id": "blue",
+     "name": "蓝",
+     "hex": "#4c8dff"
+    },
+    {
+     "id": "yellow",
+     "name": "黄",
+     "hex": "#ffd23f"
+    },
+    {
+     "id": "white",
+     "name": "白",
+     "hex": "#f2f5f7"
+    },
+    {
+     "id": "black",
+     "name": "黑",
+     "hex": "#2b3036"
+    }
+   ],
+   "cls": "bottle",
+   "color": "red",
+   "label": "红色水瓶",
+   "points": [
+    {
+     "waypoint_id": "home",
+     "name": "起点",
+     "xy": "0.0, 0.0"
+    },
+    {
+     "waypoint_id": "wp_a",
+     "name": "A 点（台阶区）",
+     "xy": "2.0, 1.5"
+    },
+    {
+     "waypoint_id": "wp_b",
+     "name": "B 点（斜坡区）",
+     "xy": "3.5, -1.5"
+    },
+    {
+     "waypoint_id": "wp_c",
+     "name": "C 点（碎石区）",
+     "xy": "4.2, 0.0"
+    }
+   ],
+   "selected": "wp_b",
+   "selectedName": "B 点（斜坡区）",
+   "route": [
+    "A 点（台阶区）",
+    "B 点（斜坡区）",
+    "C 点（碎石区）"
+   ],
+   "hero": {
+    "idle": false,
+    "title": "前往 B 点（斜坡区）",
+    "eyebrow": "最近任务",
+    "tone": "off",
+    "stateText": "已取消",
+    "phaseText": "",
+    "stepText": "",
+    "detail": "任务已取消，FPGA 已停车。",
+    "progress": 0,
+    "remainingText": "",
+    "icon": "pin",
+    "active": false,
+    "canPause": false,
+    "canResume": false,
+    "canCancel": false,
+    "canHome": true
+   },
+   "events": [
+    {
+     "id": "fpga-go-to-waypoint-aeb0c96824:cancelled:4",
+     "tone": "wait",
+     "text": "任务已取消，FPGA 已停车。",
+     "time": "20:51:56"
+    },
+    {
+     "id": "fpga-go-to-waypoint-aeb0c96824:paused:3",
+     "tone": "wait",
+     "text": "任务已暂停，FPGA 已停车。",
+     "time": "20:51:56"
+    },
+    {
+     "id": "fpga-go-to-waypoint-aeb0c96824:started:1",
+     "tone": "run",
+     "text": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+     "time": "20:51:56"
+    },
+    {
+     "id": "fpga-search-target-31ec83f945:arrived:target",
+     "tone": "ok",
+     "text": "已到达「红色水瓶」附近（约 0.80 m）。",
+     "time": "20:51:55"
+    },
+    {
+     "id": "fpga-search-target-31ec83f945:completed:6",
+     "tone": "ok",
+     "text": "已找到「红色水瓶」并停在其附近。",
+     "time": "20:51:55"
+    },
+    {
+     "id": "fpga-search-target-31ec83f945:target_found:2",
+     "tone": "ok",
+     "text": "发现「红色水瓶」，距离约 0.8 m，FPGA 开始接近。",
+     "time": "20:51:54"
+    },
+    {
+     "id": "fpga-search-target-31ec83f945:started:1",
+     "tone": "run",
+     "text": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+     "time": "20:51:53"
+    },
+    {
+     "id": "fpga-go-to-waypoint-8632f5a9ab:cancelled:4",
+     "tone": "wait",
+     "text": "任务已取消，FPGA 已停车。",
+     "time": "20:42:10"
+    },
+    {
+     "id": "fpga-go-to-waypoint-8632f5a9ab:paused:3",
+     "tone": "wait",
+     "text": "任务已暂停，FPGA 已停车。",
+     "time": "20:42:10"
+    },
+    {
+     "id": "fpga-go-to-waypoint-8632f5a9ab:started:1",
+     "tone": "run",
+     "text": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+     "time": "20:42:09"
+    },
+    {
+     "id": "fpga-search-target-e1a310467c:arrived:target",
+     "tone": "ok",
+     "text": "已到达「红色水瓶」附近（约 0.80 m）。",
+     "time": "20:42:09"
+    },
+    {
+     "id": "fpga-search-target-e1a310467c:completed:6",
+     "tone": "ok",
+     "text": "已找到「红色水瓶」并停在其附近。",
+     "time": "20:42:09"
+    },
+    {
+     "id": "fpga-search-target-e1a310467c:target_found:2",
+     "tone": "ok",
+     "text": "发现「红色水瓶」，距离约 0.8 m，FPGA 开始接近。",
+     "time": "20:42:08"
+    },
+    {
+     "id": "fpga-search-target-e1a310467c:started:1",
+     "tone": "run",
+     "text": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+     "time": "20:42:07"
+    },
+    {
+     "id": "fpga-go-to-waypoint-dadaf80b23:cancelled:4",
+     "tone": "wait",
+     "text": "任务已取消，FPGA 已停车。",
+     "time": "20:35:10"
+    },
+    {
+     "id": "fpga-go-to-waypoint-dadaf80b23:paused:3",
+     "tone": "wait",
+     "text": "任务已暂停，FPGA 已停车。",
+     "time": "20:35:09"
+    },
+    {
+     "id": "fpga-go-to-waypoint-dadaf80b23:started:1",
+     "tone": "run",
+     "text": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+     "time": "20:35:09"
+    },
+    {
+     "id": "fpga-search-target-122e09b3e3:arrived:target",
+     "tone": "ok",
+     "text": "已到达「红色水瓶」附近（约 0.80 m）。",
+     "time": "20:35:08"
+    },
+    {
+     "id": "fpga-search-target-122e09b3e3:completed:6",
+     "tone": "ok",
+     "text": "已找到「红色水瓶」并停在其附近。",
+     "time": "20:35:08"
+    },
+    {
+     "id": "fpga-search-target-122e09b3e3:target_found:2",
+     "tone": "ok",
+     "text": "发现「红色水瓶」，距离约 0.8 m，FPGA 开始接近。",
+     "time": "20:35:07"
+    },
+    {
+     "id": "fpga-search-target-122e09b3e3:started:1",
+     "tone": "run",
+     "text": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+     "time": "20:35:07"
+    },
+    {
+     "id": "fpga-go-to-waypoint-37e972975f:cancelled:4",
+     "tone": "wait",
+     "text": "任务已取消，FPGA 已停车。",
+     "time": "20:26:59"
+    },
+    {
+     "id": "fpga-go-to-waypoint-37e972975f:paused:3",
+     "tone": "wait",
+     "text": "任务已暂停，FPGA 已停车。",
+     "time": "20:26:59"
+    },
+    {
+     "id": "fpga-go-to-waypoint-37e972975f:started:1",
+     "tone": "run",
+     "text": "FPGA 已受理目标点，前往B 点（斜坡区）。",
+     "time": "20:26:59"
+    },
+    {
+     "id": "fpga-search-target-dfd8a28acd:arrived:target",
+     "tone": "ok",
+     "text": "已到达「红色水瓶」附近（约 0.82 m）。",
+     "time": "20:26:58"
+    },
+    {
+     "id": "fpga-search-target-dfd8a28acd:completed:12",
+     "tone": "ok",
+     "text": "已找到「红色水瓶」并停在其附近。",
+     "time": "20:26:58"
+    },
+    {
+     "id": "fpga-search-target-dfd8a28acd:target_found:2",
+     "tone": "ok",
+     "text": "发现「红色水瓶」，距离约 3.8 m，FPGA 开始接近。",
+     "time": "20:26:51"
+    },
+    {
+     "id": "fpga-search-target-dfd8a28acd:started:1",
+     "tone": "run",
+     "text": "开始寻找「红色水瓶」：FPGA 进入探索模式。",
+     "time": "20:26:50"
+    },
+    {
+     "id": "fpga-search-target-d28aabb09f:arrived:target",
+     "tone": "ok",
+     "text": "已到达「红色水瓶」附近（约 0.82 m）。",
+     "time": "17:06:02"
+    },
+    {
+     "id": "fpga-search-target-d28aabb09f:completed:8",
+     "tone": "ok",
+     "text": "已找到「红色水瓶」并停在其附近。",
+     "time": "17:06:02"
+    }
+   ],
+   "sheet": {
+    "show": false,
+    "title": "",
+    "rows": [],
+    "loading": false,
+    "error": ""
+   }
+  },
+  "assistant": {
+   "messages": [
+    {
+     "id": 1792673513735,
+     "role": "me",
+     "text": "找到红色水瓶并移动到它旁边",
+     "meta": ""
+    },
+    {
+     "id": 1792673513736,
+     "role": "bot",
+     "text": "已解析为寻找「红色水瓶」并移动到其附近的任务。 请确认是否执行。 请在界面上确认或取消。",
+     "meta": "search_target · rule"
+    },
+    {
+     "id": 1792673513737,
+     "role": "bot",
+     "text": "已开始寻找「红色水瓶」。",
+     "meta": ""
+    },
+    {
+     "id": 1792673513738,
+     "role": "me",
+     "text": "暂停",
+     "meta": ""
+    },
+    {
+     "id": 1792673513739,
+     "role": "bot",
+     "text": "任务已暂停。",
+     "meta": "pause_task · rule"
+    }
+   ],
+   "examples": [
+    "找到红色水瓶并移动到它旁边",
+    "跟着我",
+    "去 B 点",
+    "开始巡检",
+    "暂停",
+    "你是谁"
+   ],
+   "inputMode": "voice",
+   "text": "",
+   "recording": false,
+   "thinking": false,
+   "anchor": "bottom",
+   "sheet": {
+    "show": false,
+    "title": "",
+    "rows": [],
+    "loading": false,
+    "error": ""
+   }
+  },
+  "me": {
+   "conn": [
+    {
+     "k": "云端网关",
+     "tone": "ok",
+     "v": "在线"
+    },
+    {
+     "k": "RK3588",
+     "tone": "ok",
+     "v": "在线"
+    },
+    {
+     "k": "实时推送",
+     "tone": "ok",
+     "v": "WebSocket"
+    },
+    {
+     "k": "FPGA 导航",
+     "tone": "mock",
+     "v": "模拟"
+    },
+    {
+     "k": "FPGA 控制",
+     "tone": "mock",
+     "v": "模拟"
+    },
+    {
+     "k": "公网运动控制",
+     "tone": "off",
+     "v": "未知"
+    }
+   ],
+   "baseUrl": "http://127.0.0.1:8000",
+   "defaultBase": "https://lingxunrobot.cn",
+   "tokenDraft": "",
+   "hasToken": false,
+   "mode": "real",
+   "alerts": [
+    {
+     "id": "mode-manager-20261022122419197478",
+     "tone": "run",
+     "text": "云拓实时状态链路已恢复。",
+     "time": "20:24:19",
+     "source": "mode-manager"
+    },
+    {
+     "id": "mode-manager-20261022122419099804",
+     "tone": "warn",
+     "text": "已切换到 Real 模式，等待 fpga_bridge 上送 FPGA 导航 / 控制状态与感知状态。",
+     "time": "20:24:19",
+     "source": "mode-manager"
+    },
+    {
+     "id": "alert-startup",
+     "tone": "run",
+     "text": "Phase 1 mock middleware started.",
+     "time": "20:24:08",
+     "source": "rk3588-middleware"
+    },
+    {
+     "id": "mode-manager-20261022082443490131",
+     "tone": "run",
+     "text": "云拓实时状态链路已恢复。",
+     "time": "16:24:43",
+     "source": "mode-manager"
+    },
+    {
+     "id": "mode-manager-20261022082443440595",
+     "tone": "warn",
+     "text": "已切换到 Real 模式，等待 fpga_bridge 上送 FPGA 导航 / 控制状态与感知状态。",
+     "time": "16:24:43",
+     "source": "mode-manager"
+    },
+    {
+     "id": "mode-manager-20261022072936275781",
+     "tone": "run",
+     "text": "云拓实时状态链路已恢复。",
+     "time": "15:29:36",
+     "source": "mode-manager"
+    },
+    {
+     "id": "mode-manager-20261022072936081737",
+     "tone": "warn",
+     "text": "已切换到 Real 模式，等待 fpga_bridge 上送 FPGA 导航 / 控制状态与感知状态。",
+     "time": "15:29:36",
+     "source": "mode-manager"
+    },
+    {
+     "id": "mode-manager-20261022071953445978",
+     "tone": "run",
+     "text": "云拓实时状态链路已恢复。",
+     "time": "15:19:53",
+     "source": "mode-manager"
+    },
+    {
+     "id": "mode-manager-20261022071953384427",
+     "tone": "warn",
+     "text": "已切换到 Real 模式，等待 fpga_bridge 上送 FPGA 导航 / 控制状态与感知状态。",
+     "time": "15:19:53",
+     "source": "mode-manager"
+    }
+   ],
+   "debugOpen": false,
+   "baseDraft": "http://127.0.0.1:8000"
+  }
+ }
+}

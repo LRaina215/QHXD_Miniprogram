@@ -1,0 +1,22 @@
+.profile { display: flex; align-items: center; padding: 36rpx 32rpx; }
+.avatar { width: 128rpx; height: 128rpx; border-radius: 36rpx; flex: none; }
+.who { margin-left: 28rpx; min-width: 0; display: flex; flex-direction: column; }
+.pname { font-size: 44rpx; font-weight: 750; letter-spacing: 2rpx; }
+.psub { font-size: 25rpx; color: var(--ink-2); margin-top: 2rpx; }
+.pcomp { font-size: 22rpx; color: var(--ink-3); margin-top: 8rpx; }
+
+.recheck { font-size: 25rpx; color: var(--brand); font-weight: 600; }
+.row { display: flex; align-items: center; justify-content: space-between; height: 84rpx; }
+.row + .row { border-top: 2rpx solid var(--line); }
+.row-k { font-size: 27rpx; }
+.server { display: block; margin-top: 12rpx; font-size: 22rpx; color: var(--ink-3); word-break: break-all; }
+
+.desc { display: block; font-size: 24rpx; color: var(--ink-2); line-height: 1.6; margin-bottom: 20rpx; }
+.desc.gap { margin: 18rpx 0 0; color: var(--ink-3); }
+.token { margin-bottom: 20rpx; }
+.field { width: 100%; margin-bottom: 20rpx; }
+.two { display: flex; }
+.two .btn { flex: 1; }
+.two .btn + .btn { margin-left: 16rpx; }
+
+.ver { display: block; text-align: center; margin: 20rpx 0 0; font-size: 22rpx; color: var(--ink-3); }

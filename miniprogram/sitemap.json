@@ -1,5 +1,5 @@
 {
-  "desc": "灵巡Sentinel机器人监控小程序",
+  "desc": "云拓 · 多模态复杂地形轮腿机器人控制台",
   "rules": [{
     "action": "allow",
     "page": "*"

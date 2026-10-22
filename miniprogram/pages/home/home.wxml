@@ -1,0 +1,151 @@
+<view class="nav" style="padding-top: {{navTop}}px; height: {{navTop + navHeight}}px;">
+  <view class="nav-inner" style="height: {{navHeight}}px; padding-right: {{capsuleGap}}px;">
+    <image class="logo" src="/assets/brand/mark.png" mode="aspectFit"></image>
+    <view class="brand">
+      <text class="name">云拓</text>
+      <text class="sub">多模态复杂地形轮腿机器人</text>
+    </view>
+  </view>
+</view>
+
+<view class="wrap" style="padding-top: {{navTop + navHeight + 8}}px;">
+  <view class="links">
+    <view wx:for="{{links}}" wx:key="key" class="link {{item.tone}}">
+      <view class="link-top"><view class="link-dot"></view><text class="link-v">{{item.value}}</text></view>
+      <text class="link-k">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{banner}}" class="banner {{bannerTone}}">{{banner}}</view>
+
+  <!-- 当前任务 -->
+  <view class="card hero {{hero.tone}}">
+    <view class="hero-top">
+      <view wx:if="{{hero.idle}}" class="hero-icon brand"><image src="/assets/brand/mark.png" mode="aspectFill"></image></view>
+      <view wx:else class="hero-icon {{hero.tone}}"><image src="/assets/icons/task-{{hero.icon}}.png" mode="aspectFit"></image></view>
+      <view class="hero-meta">
+        <view class="hero-tags">
+          <text class="eyebrow">{{hero.eyebrow}}</text>
+          <view class="tag {{hero.tone}}"><view class="dot"></view>{{hero.stateText}}</view>
+          <text wx:if="{{hero.phaseText}}" class="chip">{{hero.phaseText}}</text>
+          <text wx:if="{{hero.stepText}}" class="chip num">{{hero.stepText}}</text>
+        </view>
+        <text class="hero-title">{{hero.title}}</text>
+      </view>
+    </view>
+    <text class="hero-detail">{{hero.detail}}</text>
+    <view class="prog">
+      <text class="pct num">{{hero.progress}}<text class="pct-u">%</text></text>
+      <view class="prog-main">
+        <view class="bar"><view class="bar-fill" style="width: {{hero.progress}}%;"></view></view>
+        <text class="rem num">{{hero.remainingText}}</text>
+      </view>
+    </view>
+    <view class="acts">
+      <view wx:if="{{hero.canResume}}" class="btn primary" hover-class="btn-hover" bindtap="onResume">继续</view>
+      <view wx:else class="btn {{hero.canPause ? '' : 'disabled'}}" hover-class="btn-hover" bindtap="onPause">暂停</view>
+      <view class="btn danger-text {{hero.canCancel ? '' : 'disabled'}}" hover-class="btn-hover" bindtap="onCancel">取消</view>
+      <view class="btn quiet {{hero.canHome ? '' : 'disabled'}}" hover-class="btn-hover" bindtap="onHome">返航</view>
+    </view>
+  </view>
+
+  <!-- 场地 / 相机 -->
+  <view class="stage">
+    <view class="stage-bar">
+      <view class="sseg">
+        <view class="sseg-item {{stageView === 'map' ? 'on' : ''}}" data-v="map" bindtap="onStageView">场地</view>
+        <view class="sseg-item {{stageView === 'cam' ? 'on' : ''}}" data-v="cam" bindtap="onStageView">相机</view>
+      </view>
+      <text class="stage-ctx">{{stageView === 'map' ? mapCtx : '深度相机 · RKNN 检测'}}</text>
+      <view wx:if="{{objects.locked}}" class="lock">目标已锁定</view>
+    </view>
+    <view class="stage-view">
+      <canvas type="2d" id="field" class="field-canvas {{stageView === 'map' ? '' : 'hidden'}}"></canvas>
+      <view wx:if="{{stageView === 'cam'}}" class="cam">
+        <image wx:if="{{frameSrc}}" class="frame" src="{{frameSrc}}" mode="aspectFit" bindtap="onPreviewFrame"></image>
+        <view wx:else class="cam-empty">{{frameMsg}}</view>
+      </view>
+      <view class="hud">
+        <view wx:for="{{hud}}" wx:key="k" class="hud-item">
+          <text class="hud-k">{{item.k}}</text>
+          <text class="hud-v num">{{item.v}}<text class="hud-u">{{item.u}}</text></text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- FPGA 平台 -->
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">FPGA 平台</text>
+      <view class="tag {{platform.navTone}}"><view class="dot"></view>导航 · {{platform.navLink}}</view>
+    </view>
+    <view class="card-body">
+      <view class="big3">
+        <view class="big"><text class="eyebrow">导航状态</text><text class="big-v {{platform.stateTone}}">{{platform.state}}</text><text class="big-s">{{platform.mode}}</text></view>
+        <view class="big"><text class="eyebrow">期望速度</text><text class="big-v num">{{platform.vx}}</text><text class="big-s num">m/s · ω {{platform.wz}}</text></view>
+        <view class="big"><text class="eyebrow">定位</text><text class="big-v">{{platform.loc}}</text><text class="big-s num">{{platform.locSub}}</text></view>
+      </view>
+      <view class="flags">
+        <view wx:for="{{platform.flags}}" wx:key="k" class="flag {{item.v}}">{{item.v === 'yes' ? '✓' : '×'}} {{item.k}}</view>
+      </view>
+      <view class="ctl-head">
+        <text class="eyebrow">运动控制 · RL 策略</text>
+        <view class="tag {{platform.ctlTone}}"><view class="dot"></view>{{platform.ctlLink}}</view>
+      </view>
+      <view class="ctl">
+        <view class="wheels">
+          <view class="wheel"><text class="wheel-k">左轮</text><view class="wb"><view class="wb-fill" style="width: {{platform.leftPct}}%;"></view></view><text class="wheel-v num">{{platform.left}}</text></view>
+          <view class="wheel"><text class="wheel-k">右轮</text><view class="wb"><view class="wb-fill" style="width: {{platform.rightPct}}%;"></view></view><text class="wheel-v num">{{platform.right}}</text></view>
+        </view>
+        <view class="att">
+          <view class="att-ring"><view class="att-line" style="transform: translateY({{platform.pitch * 1.2}}rpx) rotate({{-platform.roll}}deg);"><view class="att-dot"></view></view></view>
+          <text class="att-t num">{{platform.attText}}</text>
+        </view>
+      </view>
+      <view class="foot">
+        <text class="{{platform.policyOk ? 'okt' : ''}}">{{platform.policy}}</text>
+        <text class="{{platform.ctlEstopBad ? 'badt' : ''}}">{{platform.ctlEstop}}</text>
+        <text wx:if="{{platform.faults}}" class="badt">故障：{{platform.faults}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 视觉目标 -->
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">视觉目标</text>
+      <text class="eyebrow num">{{objects.meta}}</text>
+    </view>
+    <view class="card-body">
+      <view wx:if="{{objects.items.length}}">
+        <view wx:for="{{objects.items}}" wx:key="key" class="obj">
+          <view class="obj-sw" style="background: {{item.swatch}};"></view>
+          <view class="obj-who"><text class="obj-name">{{item.name}}</text><text class="obj-sub num">{{item.sub}}</text></view>
+          <text class="obj-dist num">{{item.dist}}<text class="obj-u">m</text></text>
+        </view>
+      </view>
+      <view wx:else class="empty">视野内暂无目标</view>
+    </view>
+  </view>
+
+  <!-- 动态 -->
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">动态</text>
+      <text class="more" bindtap="onAllEvents">全部 ›</text>
+    </view>
+    <view class="card-body">
+      <view wx:if="{{events.length}}">
+        <view wx:for="{{events}}" wx:key="id" class="tl-item">
+          <view class="tl-dot {{item.tone}}"></view>
+          <view><view class="tl-text">{{item.text}}</view><text class="tl-time num">{{item.time}}</text></view>
+        </view>
+      </view>
+      <view wx:else class="empty">暂无任务动态</view>
+    </view>
+  </view>
+</view>
+
+<estop-fab></estop-fab>
+<confirm-sheet show="{{sheet.show}}" title="{{sheet.title}}" rows="{{sheet.rows}}" loading="{{sheet.loading}}" error="{{sheet.error}}" bind:confirm="onSheetConfirm" bind:cancel="onSheetCancel"></confirm-sheet>

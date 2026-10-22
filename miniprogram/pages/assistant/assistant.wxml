@@ -1,0 +1,49 @@
+<view class="page">
+  <scroll-view class="chat" scroll-y scroll-into-view="{{anchor}}" scroll-with-animation enhanced show-scrollbar="{{false}}">
+    <view class="chat-in">
+      <view class="hello">
+        <image class="hello-logo" src="/assets/brand/mark.png" mode="aspectFit"></image>
+        <text class="hello-title">我是云拓，想让我做什么？</text>
+        <text class="hello-sub">按住下方按钮说话，或者点一句试试。运动类命令会先请你确认，再交给 FPGA 执行。</text>
+        <view class="ex">
+          <view wx:for="{{examples}}" wx:key="*this" class="ex-item" data-text="{{item}}" bindtap="onExample">{{item}}</view>
+        </view>
+      </view>
+
+      <view wx:for="{{messages}}" wx:key="id" id="m-{{item.id}}" class="msg {{item.role}}">
+        <image wx:if="{{item.role === 'bot'}}" class="avatar" src="/assets/brand/mark.png" mode="aspectFit"></image>
+        <view class="bubble">
+          <text class="text">{{item.text}}</text>
+          <text wx:if="{{item.meta}}" class="meta num">{{item.meta}}</text>
+        </view>
+      </view>
+      <view wx:if="{{thinking}}" class="msg bot">
+        <image class="avatar" src="/assets/brand/mark.png" mode="aspectFit"></image>
+        <view class="bubble"><text class="text muted">正在理解…</text></view>
+      </view>
+      <view id="bottom" class="bottom-pad"></view>
+    </view>
+  </scroll-view>
+
+  <view class="bar">
+    <view class="mode" hover-class="btn-hover" bindtap="onToggleMode">
+      <image src="/assets/icons/{{inputMode === 'voice' ? 'keyboard' : 'mic'}}.png" mode="aspectFit"></image>
+    </view>
+    <view wx:if="{{inputMode === 'voice'}}" class="talk {{recording ? 'on' : ''}}" bindtouchstart="onTalkStart" bindtouchend="onTalkEnd" bindtouchcancel="onTalkEnd">
+      {{recording ? '松开发送' : '按住 说话'}}
+    </view>
+    <block wx:else>
+      <input class="input" value="{{text}}" placeholder="输入命令，例如：找到红色水瓶" confirm-type="send" bindinput="onInput" bindconfirm="onSend" cursor-spacing="16" />
+      <view class="send {{text ? '' : 'off'}}" hover-class="btn-hover" bindtap="onSend">
+        <image src="/assets/icons/send.png" mode="aspectFit"></image>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{recording}}" class="rec">
+    <view class="rec-wave"><view wx:for="{{[1,2,3,4,5]}}" wx:key="*this" class="rec-b" style="animation-delay: {{item * 0.12}}s;"></view></view>
+    <text>正在听…松开发送</text>
+  </view>
+</view>
+
+<confirm-sheet show="{{sheet.show}}" title="{{sheet.title}}" rows="{{sheet.rows}}" loading="{{sheet.loading}}" error="{{sheet.error}}" bind:confirm="onSheetConfirm" bind:cancel="onSheetCancel"></confirm-sheet>

@@ -1,50 +1,50 @@
 /**
- * Central runtime configuration for the Sentinel mini program.
+ * 云拓小程序运行配置。
  *
- * Phase 8C uses the public Cloud Gateway as the primary data path:
- * REST snapshots first, WebSocket stream as an acceleration path.
+ * 公网链路：小程序 -> https://lingxunrobot.cn（Nginx）-> Cloud Gateway -> RK3588 后端。
+ * 主域名的 /api/ 与 /ws/ 已由 Nginx 转发到网关；api.lingxunrobot.cn 的证书已过期，不再使用。
+ * 现场联调可在「我的 > 调试」里临时改成 RK3588 局域网地址（需开发者工具或真机调试关闭域名校验）。
  */
 
-const ENV = 'prod';
+const DEFAULT_BASE_URL = 'https://lingxunrobot.cn';
+const BASE_URL_STORAGE_KEY = 'yuntuo_base_url';
 
-const ENVIRONMENTS = {
-  prod: {
-    BASE_URL: 'https://api.lingxunrobot.cn',
-    WS_STATE_URL: 'wss://api.lingxunrobot.cn/ws/state',
-    WS_IMU_URL: 'wss://api.lingxunrobot.cn/ws/imu',
-    WS_NAVIGATION_URL: 'wss://api.lingxunrobot.cn/ws/navigation'
-  },
-  dev: {
-    BASE_URL: 'https://api.lingxunrobot.cn',
-    WS_STATE_URL: 'wss://api.lingxunrobot.cn/ws/state',
-    WS_IMU_URL: 'wss://api.lingxunrobot.cn/ws/imu',
-    WS_NAVIGATION_URL: 'wss://api.lingxunrobot.cn/ws/navigation'
+function storedBaseUrl() {
+  try {
+    const value = (wx.getStorageSync(BASE_URL_STORAGE_KEY) || '').trim();
+    return /^https?:\/\/[^\s]+$/i.test(value) ? value.replace(/\/+$/, '') : '';
+  } catch (e) {
+    return '';
   }
-};
+}
 
-const ACTIVE = ENVIRONMENTS[ENV] || ENVIRONMENTS.prod;
+function baseUrl() {
+  return storedBaseUrl() || DEFAULT_BASE_URL;
+}
 
-const CONFIG = {
-  ENV,
-  BASE_URL: ACTIVE.BASE_URL,
-  WS_STATE_URL: ACTIVE.WS_STATE_URL,
-  WS_IMU_URL: ACTIVE.WS_IMU_URL,
-  WS_NAVIGATION_URL: ACTIVE.WS_NAVIGATION_URL,
-  ROBOT_ID: 'lingxun-sentinel-rk3588',
-  POLL_INTERVAL_MS: 3000,
-  STALE_AFTER_MS: 10000,
-  FRAME_REFRESH_MS: 3000,
-  PUBLIC_API_TOKEN_PLACEHOLDER: '在设置页保存公网 Token',
-  TOKEN_STORAGE_KEY: 'sentinel_public_api_token'
-};
+function wsUrl(path) {
+  return baseUrl().replace(/^http/i, 'ws') + path;
+}
 
 function buildUrl(path) {
-  if (!path) return CONFIG.BASE_URL;
+  if (!path) return baseUrl();
   if (/^https?:\/\//i.test(path)) return path;
-  return CONFIG.BASE_URL.replace(/\/+$/, '') + '/' + String(path).replace(/^\/+/, '');
+  return baseUrl() + '/' + String(path).replace(/^\/+/, '');
 }
 
 module.exports = {
-  ...CONFIG,
-  buildUrl
+  DEFAULT_BASE_URL,
+  BASE_URL_STORAGE_KEY,
+  TOKEN_STORAGE_KEY: 'yuntuo_public_api_token',
+  LEGACY_TOKEN_STORAGE_KEY: 'sentinel_public_api_token',
+  SOURCE: 'wechat-miniprogram',
+  POLL_INTERVAL_MS: 3000,
+  HEALTH_INTERVAL_MS: 15000,
+  EVENTS_INTERVAL_MS: 5000,
+  FRAME_INTERVAL_MS: 2000,
+  STALE_AFTER_MS: 10000,
+  baseUrl,
+  wsUrl,
+  buildUrl,
+  storedBaseUrl
 };

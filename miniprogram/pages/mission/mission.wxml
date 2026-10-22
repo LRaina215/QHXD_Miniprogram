@@ -1,0 +1,93 @@
+<view class="wrap">
+  <!-- 正在执行的任务 -->
+  <view wx:if="{{hero.active}}" class="card now {{hero.tone}}">
+    <view class="now-top">
+      <view class="tag {{hero.tone}}"><view class="dot"></view>{{hero.stateText}}</view>
+      <text class="now-title">{{hero.title}}</text>
+      <text class="now-pct num">{{hero.progress}}%</text>
+    </view>
+    <view class="bar"><view class="bar-fill" style="width: {{hero.progress}}%;"></view></view>
+    <text class="now-detail">{{hero.detail}}</text>
+    <view class="now-acts">
+      <view wx:if="{{hero.canResume}}" class="btn primary" hover-class="btn-hover" bindtap="onResume">继续</view>
+      <view wx:else class="btn {{hero.canPause ? '' : 'disabled'}}" hover-class="btn-hover" bindtap="onPause">暂停</view>
+      <view class="btn danger-text" hover-class="btn-hover" bindtap="onCancel">取消任务</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head">
+      <view class="seg grow">
+        <view class="seg-item {{tab === 'vision' ? 'on' : ''}}" data-tab="vision" bindtap="onTab">视觉任务</view>
+        <view class="seg-item {{tab === 'goto' ? 'on' : ''}}" data-tab="goto" bindtap="onTab">定点</view>
+        <view class="seg-item {{tab === 'patrol' ? 'on' : ''}}" data-tab="patrol" bindtap="onTab">巡检</view>
+      </view>
+    </view>
+
+    <!-- 视觉任务 -->
+    <view wx:if="{{tab === 'vision'}}" class="card-body">
+      <text class="label">找什么</text>
+      <view class="classes">
+        <view wx:for="{{classes}}" wx:key="id" class="cls {{item.id === cls ? 'on' : ''}}" data-id="{{item.id}}" bindtap="onClass">
+          <image class="cls-icon" src="/assets/icons/cls-{{item.icon}}{{item.id === cls ? '-on' : ''}}.png" mode="aspectFit"></image>
+          <text>{{item.name}}</text>
+        </view>
+      </view>
+      <text class="label">什么颜色 <text class="muted">可不选</text></text>
+      <view class="colors">
+        <view wx:for="{{colors}}" wx:key="id" class="sw {{item.id === color ? 'on' : ''}}" data-id="{{item.id}}" bindtap="onColor">
+          <view class="sw-in" style="background: {{item.hex}};"></view>
+        </view>
+      </view>
+      <view class="btn primary block big" hover-class="btn-hover" bindtap="onSearch">寻找{{label}}并停在旁边</view>
+      <view class="btn block follow" hover-class="btn-hover" bindtap="onFollow">跟随我</view>
+      <text class="hint">FPGA 自主探索场地，发现目标后接近到 0.7 m 并转向面对它。</text>
+    </view>
+
+    <!-- 定点 -->
+    <view wx:if="{{tab === 'goto'}}" class="card-body">
+      <view wx:if="{{points.length}}">
+        <view wx:for="{{points}}" wx:key="waypoint_id" class="pt {{item.waypoint_id === selected ? 'on' : ''}}" data-id="{{item.waypoint_id}}" bindtap="onPoint">
+          <view class="pt-dot"></view>
+          <text class="pt-name">{{item.name}}</text>
+          <text class="pt-xy num">{{item.xy}}</text>
+        </view>
+        <view class="btn primary block big gap" hover-class="btn-hover" bindtap="onGoto">前往 {{selectedName}}</view>
+      </view>
+      <view wx:else class="empty">还没有拿到场地点位（RK3588 离线或未配置）</view>
+    </view>
+
+    <!-- 巡检 -->
+    <view wx:if="{{tab === 'patrol'}}" class="card-body">
+      <view class="chain">
+        <block wx:for="{{route}}" wx:key="*this">
+          <text class="chain-pt">{{item}}</text>
+          <text class="chain-arrow">›</text>
+        </block>
+        <text class="chain-pt">起点</text>
+      </view>
+      <view class="btn primary block big" hover-class="btn-hover" bindtap="onPatrol">开始巡检</view>
+      <text class="hint">逐点导航，每个点停留后继续，最后返回起点。</text>
+    </view>
+  </view>
+
+  <!-- 任务动态 -->
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">任务动态</text>
+      <text class="eyebrow num">{{events.length}} 条</text>
+    </view>
+    <view class="card-body">
+      <view wx:if="{{events.length}}">
+        <view wx:for="{{events}}" wx:key="id" class="tl-item">
+          <view class="tl-dot {{item.tone}}"></view>
+          <view><view class="tl-text">{{item.text}}</view><text class="tl-time num">{{item.time}}</text></view>
+        </view>
+      </view>
+      <view wx:else class="empty">暂无任务动态</view>
+    </view>
+  </view>
+</view>
+
+<estop-fab></estop-fab>
+<confirm-sheet show="{{sheet.show}}" title="{{sheet.title}}" rows="{{sheet.rows}}" loading="{{sheet.loading}}" error="{{sheet.error}}" bind:confirm="onSheetConfirm" bind:cancel="onSheetCancel"></confirm-sheet>

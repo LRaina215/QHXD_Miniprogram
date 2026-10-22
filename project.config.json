@@ -45,7 +45,7 @@
     "disableSWC": true
   },
   "appid": "wx1f68b56b794572da",
-  "projectname": "Sentinel",
+  "projectname": "YunTuo",
   "libVersion": "3.16.1",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {

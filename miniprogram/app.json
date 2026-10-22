@@ -1,55 +1,58 @@
 {
   "pages": [
-    "pages/index/index",
-    "pages/tasks/tasks",
-    "pages/charts/charts",
-    "pages/settings/settings"
+    "pages/home/home",
+    "pages/mission/mission",
+    "pages/assistant/assistant",
+    "pages/me/me"
   ],
   "lazyCodeLoading": "requiredComponents",
   "window": {
-    "navigationBarBackgroundColor": "#FFFFFF",
-    "navigationBarTitleText": "Sentinel",
+    "navigationBarBackgroundColor": "#f2f1ec",
+    "navigationBarTitleText": "云拓",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#F5F7FA",
-    "backgroundTextStyle": "light"
+    "backgroundColor": "#f2f1ec",
+    "backgroundColorTop": "#f2f1ec",
+    "backgroundColorBottom": "#f2f1ec",
+    "backgroundTextStyle": "dark"
   },
   "tabBar": {
-    "color": "#AEAEB2",
-    "selectedColor": "#1A6DD4",
-    "backgroundColor": "#FFFFFF",
+    "color": "#8a8f97",
+    "selectedColor": "#2f5bff",
+    "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "iconPath": "icon_dashboard.png",
-        "selectedIconPath": "icon_dashboard_active.png",
-        "text": "仪表盘"
+        "pagePath": "pages/home/home",
+        "iconPath": "assets/tab/home.png",
+        "selectedIconPath": "assets/tab/home-on.png",
+        "text": "总览"
       },
       {
-        "pagePath": "pages/tasks/tasks",
-        "iconPath": "icon_tasks.png",
-        "selectedIconPath": "icon_tasks_active.png",
+        "pagePath": "pages/mission/mission",
+        "iconPath": "assets/tab/mission.png",
+        "selectedIconPath": "assets/tab/mission-on.png",
         "text": "任务"
       },
       {
-        "pagePath": "pages/charts/charts",
-        "iconPath": "icon_charts.png",
-        "selectedIconPath": "icon_charts_active.png",
-        "text": "数据"
+        "pagePath": "pages/assistant/assistant",
+        "iconPath": "assets/tab/assistant.png",
+        "selectedIconPath": "assets/tab/assistant-on.png",
+        "text": "助手"
       },
       {
-        "pagePath": "pages/settings/settings",
-        "iconPath": "icon_settings.png",
-        "selectedIconPath": "icon_settings_active.png",
-        "text": "设置"
+        "pagePath": "pages/me/me",
+        "iconPath": "assets/tab/me.png",
+        "selectedIconPath": "assets/tab/me-on.png",
+        "text": "我的"
       }
     ]
   },
-  "usingComponents": {},
-  "requiredBackgroundModes": [],
-  "permission": {},
+  "usingComponents": {
+    "confirm-sheet": "/components/confirm-sheet/confirm-sheet",
+    "estop-fab": "/components/estop-fab/estop-fab"
+  },
   "plugins": {
-    "WechatSI":{
+    "WechatSI": {
       "version": "0.3.7",
       "provider": "wx069ba97219f66d99"
     }

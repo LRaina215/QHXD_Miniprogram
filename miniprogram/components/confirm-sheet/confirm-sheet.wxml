@@ -1,0 +1,19 @@
+<view wx:if="{{show}}" class="cs-mask" catchtouchmove="noop" bindtap="onCancel">
+  <view class="cs-sheet" catchtap="noop">
+    <view class="cs-grip"></view>
+    <text class="cs-kicker">{{kicker}}</text>
+    <text class="cs-title">{{title}}</text>
+    <view wx:if="{{note}}" class="cs-note">{{note}}</view>
+    <view class="cs-rows">
+      <view wx:for="{{rows}}" wx:key="k" class="cs-row">
+        <text class="cs-k">{{item.k}}</text>
+        <text class="cs-v">{{item.v}}</text>
+      </view>
+    </view>
+    <view wx:if="{{error}}" class="cs-err">{{error}}</view>
+    <view class="cs-acts">
+      <view class="btn quiet" hover-class="btn-hover" bindtap="onCancel">{{cancelText}}</view>
+      <view class="btn primary {{loading ? 'disabled' : ''}}" hover-class="btn-hover" bindtap="onConfirm">{{loading ? '处理中…' : confirmText}}</view>
+    </view>
+  </view>
+</view>

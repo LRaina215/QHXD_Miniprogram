@@ -1,5 +1,5 @@
 {
-  "description": "灵巡Sentinel机器人监控小程序",
+  "description": "云拓 · 多模态复杂地形轮腿机器人控制台",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -42,7 +42,7 @@
   "compileType": "miniprogram",
   "libVersion": "3.5.0",
   "appid": "wx0000000000000000",
-  "projectname": "灵巡Sentinel",
+  "projectname": "云拓",
   "condition": {},
   "editorSetting": {
     "tabIndent": "insertSpaces",

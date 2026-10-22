@@ -1,0 +1,14 @@
+/* 类名统一 ef- 前缀：组件开了 addGlobalClass，页面样式会作用进来，避免与页面类名冲突 */
+.ef {
+  position: fixed; right: 32rpx; bottom: calc(32rpx + env(safe-area-inset-bottom)); z-index: 90;
+  width: 136rpx; height: 136rpx; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #e5263b; color: #fff;
+  box-shadow: 0 6rpx 0 #b3182a, 0 20rpx 48rpx rgba(229, 38, 59, 0.42);
+}
+.ef-hover { transform: translateY(4rpx); box-shadow: 0 2rpx 0 #b3182a, 0 12rpx 30rpx rgba(229, 38, 59, 0.4); }
+.ef-active { background: #15171a; box-shadow: 0 0 0 6rpx #e5263b, 0 20rpx 48rpx rgba(229, 38, 59, 0.4); }
+.ef-busy { opacity: 0.6; }
+.ef-ring { width: 44rpx; height: 44rpx; border-radius: 50%; border: 6rpx solid #fff; display: flex; align-items: center; justify-content: center; }
+.ef-tick { width: 6rpx; height: 18rpx; border-radius: 3rpx; background: #fff; }
+.ef-txt { margin-top: 6rpx; font-size: 24rpx; font-weight: 750; letter-spacing: 4rpx; }

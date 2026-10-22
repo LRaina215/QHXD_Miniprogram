@@ -1,0 +1,82 @@
+<view class="wrap">
+  <view class="card profile">
+    <image class="avatar" src="/assets/brand/avatar.png" mode="aspectFill"></image>
+    <view class="who">
+      <text class="pname">云拓</text>
+      <text class="psub">多模态复杂地形轮腿机器人</text>
+      <text class="pcomp">全国大学生嵌入式芯片与系统设计竞赛 · FPGA 创新设计赛道</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">连接状态</text>
+      <text class="recheck" bindtap="onRecheck">重新检测</text>
+    </view>
+    <view class="card-body">
+      <view wx:for="{{conn}}" wx:key="k" class="row">
+        <text class="row-k">{{item.k}}</text>
+        <view class="tag {{item.tone}}"><view class="dot"></view>{{item.v}}</view>
+      </view>
+      <text class="server num">服务器 {{baseUrl}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head"><text class="card-title">访问 Token</text>
+      <view class="tag {{hasToken ? 'ok' : 'off'}}"><view class="dot"></view>{{hasToken ? '已设置' : '未设置'}}</view>
+    </view>
+    <view class="card-body">
+      <text class="desc">下达任务、急停、语音助手都需要 Token；只读查看不需要。Token 只保存在本机。</text>
+      <input class="field token" password value="{{tokenDraft}}" placeholder="粘贴公网访问 Token" bindinput="onTokenInput" />
+      <view class="two">
+        <view class="btn primary" hover-class="btn-hover" bindtap="onSaveToken">保存</view>
+        <view class="btn quiet" hover-class="btn-hover" bindtap="onClearToken">清除</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head"><text class="card-title">运行模式</text></view>
+    <view class="card-body">
+      <view class="seg">
+        <view class="seg-item {{mode === 'mock' ? 'on' : ''}}" data-mode="mock" bindtap="onMode">模拟</view>
+        <view class="seg-item {{mode === 'real' ? 'on' : ''}}" data-mode="real" bindtap="onMode">实车</view>
+      </view>
+      <text class="desc gap">模拟模式下数据来自后端模拟器；实车模式接 FPGA 与传感器。</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">告警</text>
+      <text class="eyebrow num">{{alerts.length}} 条</text>
+    </view>
+    <view class="card-body">
+      <view wx:if="{{alerts.length}}">
+        <view wx:for="{{alerts}}" wx:key="id" class="tl-item">
+          <view class="tl-dot {{item.tone}}"></view>
+          <view><view class="tl-text">{{item.text}}</view><text class="tl-time num">{{item.time}} · {{item.source}}</text></view>
+        </view>
+      </view>
+      <view wx:else class="empty">暂无告警</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head" bindtap="onToggleDebug">
+      <text class="card-title">调试</text>
+      <text class="eyebrow">{{debugOpen ? '收起' : '展开'}}</text>
+    </view>
+    <view wx:if="{{debugOpen}}" class="card-body">
+      <text class="desc">现场没有公网时，可以临时改成 RK3588 的局域网地址（例如 http://192.168.4.1:8000），真机调试需在开发者工具里关闭合法域名校验。留空恢复默认。</text>
+      <input class="field" value="{{baseDraft}}" placeholder="{{defaultBase}}" bindinput="onBaseInput" />
+      <view class="two">
+        <view class="btn" hover-class="btn-hover" bindtap="onSaveBase">应用地址</view>
+        <view class="btn quiet" hover-class="btn-hover" bindtap="onCopyDomains">复制合法域名</view>
+      </view>
+    </view>
+  </view>
+
+  <text class="ver">云拓小程序 · 公网经 lingxunrobot.cn 云端网关接入 RK3588</text>
+</view>

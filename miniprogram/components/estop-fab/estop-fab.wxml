@@ -1,0 +1,4 @@
+<view class="ef {{active ? 'ef-active' : ''}} {{busy ? 'ef-busy' : ''}}" hover-class="ef-hover" bindtap="onTap" aria-role="button" aria-label="{{active ? '解除急停' : '急停'}}">
+  <view class="ef-ring"><view class="ef-tick"></view></view>
+  <text class="ef-txt">{{active ? '解除' : '急停'}}</text>
+</view>

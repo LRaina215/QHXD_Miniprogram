@@ -1,138 +1,138 @@
+/**
+ * REST 客户端：所有请求都 resolve（不 reject），返回 { ok, status, data, error }。
+ * 写接口带 Bearer Token；网关的拒绝原因统一翻译成中文（explain）。
+ */
 const config = require('./config');
 
-function normalizeError(err) {
-  if (!err) return 'request_failed';
-  if (typeof err === 'string') return err;
-  return err.errMsg || err.message || 'request_failed';
+const ERROR_TEXT = {
+  missing_token: '还没有设置访问 Token，请到「我的」里填写',
+  unauthorized: 'Token 不正确或已失效，请到「我的」里重新填写',
+  public_control_disabled: '云端已关闭公网运动控制（PUBLIC_CONTROL_ENABLED=false）',
+  public_endpoint_disabled: '该接口不对公网开放',
+  not_in_public_whitelist: '云端网关版本较旧，暂不支持这个操作',
+  robot_offline: '机器人离线，命令没有发出',
+  robot_emergency_stop: '机器人处于急停状态，请先解除急停',
+  rate_limited: '操作太频繁，请稍后再试',
+  request_timeout: '请求超时，RK3588 可能离线',
+  network_error: '网络不可用，请检查手机网络'
+};
+
+function getToken() {
+  try {
+    const token = (wx.getStorageSync(config.TOKEN_STORAGE_KEY) || '').trim();
+    if (token) return token;
+    return (wx.getStorageSync(config.LEGACY_TOKEN_STORAGE_KEY) || '').trim();
+  } catch (e) {
+    return '';
+  }
 }
 
-function request(path, options = {}) {
-  const url = config.buildUrl(path);
-  const method = options.method || 'GET';
-  const headers = Object.assign({}, options.header || options.headers || {});
+function setToken(token) {
+  const value = (token || '').trim();
+  if (value) wx.setStorageSync(config.TOKEN_STORAGE_KEY, value);
+  else wx.removeStorageSync(config.TOKEN_STORAGE_KEY);
+  wx.removeStorageSync(config.LEGACY_TOKEN_STORAGE_KEY);
+}
 
+function explain(error) {
+  if (!error) return '请求失败';
+  const code = String(error);
+  if (code.indexOf('robot_fault:') === 0) return '机器人存在故障：' + code.slice(12);
+  if (code.indexOf('rk_forward_failed') === 0) return 'RK3588 后端暂时连不上';
+  if (/timeout/i.test(code)) return ERROR_TEXT.request_timeout;
+  if (/request:fail/i.test(code)) return ERROR_TEXT.network_error;
+  return ERROR_TEXT[code] || code;
+}
+
+function request(path, options) {
+  const opts = options || {};
+  const url = config.buildUrl(path);
+  const header = Object.assign({}, opts.header || {});
+  if (opts.auth) {
+    const token = getToken();
+    if (!token && opts.auth === 'required') {
+      return Promise.resolve({ ok: false, status: 0, data: null, error: 'missing_token' });
+    }
+    if (token) header.Authorization = 'Bearer ' + token;
+  }
+  if (opts.method === 'POST') header['Content-Type'] = 'application/json';
   return new Promise((resolve) => {
     wx.request({
       url,
-      method,
-      data: options.data,
-      header: headers,
-      timeout: options.timeout || 8000,
+      method: opts.method || 'GET',
+      data: opts.data,
+      header,
+      timeout: opts.timeout || 8000,
+      responseType: opts.responseType || 'text',
       success(res) {
-        const statusCode = res.statusCode || 0;
-        if (statusCode >= 200 && statusCode < 300) {
-          resolve({ ok: true, data: res.data, statusCode, headers: res.header || {}, url });
+        const status = res.statusCode || 0;
+        const body = res.data;
+        if (status >= 200 && status < 300) {
+          resolve({ ok: true, status, data: body, error: '' });
           return;
         }
-        const body = res.data || {};
-        resolve({
-          ok: false,
-          error: body.detail || body.error || body.errMsg || `http_${statusCode}`,
-          statusCode,
-          data: res.data,
-          headers: res.header || {},
-          url
-        });
+        const detail = body && typeof body === 'object' ? (body.detail || body.error) : '';
+        resolve({ ok: false, status, data: body, error: (typeof detail === 'string' && detail) || ('http_' + status) });
       },
       fail(err) {
-        resolve({
-          ok: false,
-          error: normalizeError(err),
-          statusCode: 0,
-          data: null,
-          headers: {},
-          url
-        });
+        resolve({ ok: false, status: 0, data: null, error: (err && (err.errMsg || err.message)) || 'network_error' });
       }
     });
   });
 }
 
-function getHealth() {
-  return request('/health', { timeout: 15000 });
+function unwrap(result) {
+  if (!result || !result.ok || !result.data || typeof result.data !== 'object') return null;
+  return result.data.data !== undefined ? result.data.data : result.data;
 }
 
-function getStateLatest() {
-  return request('/api/state/latest');
+/** 网关健康：新网关在 /api/gateway/health（主域名可达）；旧网关只有 /health（仅 api 子域名） */
+async function getGatewayHealth() {
+  const fresh = await request('/api/gateway/health', { timeout: 15000 });
+  if (fresh.ok && fresh.data && fresh.data.status) return { ok: true, data: fresh.data };
+  const legacy = await request('/health', { timeout: 15000 });
+  if (legacy.ok && legacy.data && typeof legacy.data === 'object' && legacy.data.status) return { ok: true, data: legacy.data };
+  return { ok: false, data: null, error: fresh.error || legacy.error };
 }
 
-function getAlerts() {
-  return request('/api/alerts');
-}
-
-function getCurrentTask() {
-  return request('/api/tasks/current');
-}
-
-function getWaypoints() {
-  return request('/api/waypoints');
-}
-
-function getTaskEvents() {
-  return request('/api/tasks/events?limit=50');
-}
-
-function getPerceptionEvents(limit = 20) {
-  return request(`/api/perception/events?limit=${limit}`);
-}
-
-function getVideoHealth() {
-  return request('/api/perception/video_health');
-}
-
-function getWeatherLatest() {
-  return request('/api/external/weather/latest');
-}
-
-function getNavigationLatest() {
-  return request('/api/navigation/latest');
-}
-
-function getNavigationMapMetadata() {
-  return request('/api/navigation/map/metadata');
-}
-
-function getNavigationMapImageUrl() {
-  return config.buildUrl(`/api/navigation/map/image?t=${Date.now()}`);
-}
-
-function getCommandLogs() {
-  return request('/api/commands/logs');
-}
-
-function getImuLatest() {
-  return request('/api/imu/latest');
-}
-
-function getLatestFrameUrl() {
-  const t = Math.floor(Date.now() / 500) * 500;
-  const base = config.BASE_URL;
-  const path = `/api/perception/latest_frame?t=${t}`;
-  if (!base) return path;
-  return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
-}
-
-function checkLatestFrame() {
-  const path = `/api/perception/latest_frame?t=${Date.now()}`;
-  return request(path, { method: 'HEAD', timeout: 5000 });
+function post(path, body, auth) {
+  return request(path, {
+    method: 'POST',
+    data: Object.assign({ source: config.SOURCE, requested_by: 'wechat' }, body || {}),
+    auth: auth || 'required',
+    timeout: 12000
+  });
 }
 
 module.exports = {
   request,
-  getHealth,
-  getStateLatest,
-  getAlerts,
-  getCurrentTask,
-  getWaypoints,
-  getTaskEvents,
-  getPerceptionEvents,
-  getVideoHealth,
-  getWeatherLatest,
-  getNavigationLatest,
-  getNavigationMapMetadata,
-  getNavigationMapImageUrl,
-  getCommandLogs,
-  getImuLatest,
-  getLatestFrameUrl,
-  checkLatestFrame
+  unwrap,
+  explain,
+  getToken,
+  setToken,
+  getGatewayHealth,
+  getState: () => request('/api/state/latest'),
+  getNavigation: () => request('/api/navigation/latest'),
+  getMapMetadata: () => request('/api/navigation/map/metadata'),
+  mapImageUrl: (version) => config.buildUrl('/api/navigation/map/image?v=' + encodeURIComponent(version || Date.now())),
+  getWaypoints: () => request('/api/waypoints'),
+  getTaskEvents: (limit) => request('/api/tasks/events?limit=' + (limit || 30)),
+  getAlerts: () => request('/api/alerts'),
+  getLatestFrame: () => request('/api/perception/latest_frame?t=' + Date.now(), { responseType: 'arraybuffer', timeout: 6000 }),
+  mission: (command, body) => post('/api/mission/' + command, body),
+  estop: (engage) => post('/api/platform/estop', { engage: !!engage }),
+  switchMode: (mode) => post('/api/system/mode/switch', { mode }),
+  smartCommand: (text) => request('/api/voice/smart_command', {
+    method: 'POST',
+    auth: 'required',
+    timeout: 45000,
+    data: { text, source: config.SOURCE + '-voice', requested_by: 'wechat', generate_tts: true }
+  }),
+  // 确认接口的请求模型不接受 source 字段，单独组包
+  confirmCommand: (id, confirmed) => request('/api/voice/confirm_command', {
+    method: 'POST',
+    auth: 'required',
+    timeout: 12000,
+    data: { pending_command_id: id, confirmed: !!confirmed, requested_by: 'wechat' }
+  })
 };

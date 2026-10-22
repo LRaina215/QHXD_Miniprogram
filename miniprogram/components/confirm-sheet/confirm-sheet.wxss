@@ -1,0 +1,16 @@
+/* 类名统一 cs- 前缀：组件开了 addGlobalClass（复用 app.wxss 的 .btn），页面样式也会作用进来 */
+.cs-mask { position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 100; background: rgba(21, 23, 26, 0.38); display: flex; align-items: flex-end; }
+.cs-sheet { width: 100%; padding: 20rpx 36rpx calc(36rpx + env(safe-area-inset-bottom)); background: var(--surface); border-radius: 40rpx 40rpx 0 0; box-shadow: 0 -12rpx 48rpx rgba(21, 23, 26, 0.18); }
+.cs-grip { width: 72rpx; height: 10rpx; border-radius: 5rpx; background: var(--line-2); margin: 0 auto 28rpx; }
+.cs-kicker { display: block; font-size: 24rpx; font-weight: 700; color: var(--wait); letter-spacing: 2rpx; }
+.cs-title { display: block; margin-top: 8rpx; font-size: 40rpx; font-weight: 720; line-height: 1.3; }
+.cs-note { margin-top: 24rpx; padding: 20rpx 24rpx; border-radius: 20rpx; background: var(--wait-soft); color: var(--ink-2); font-size: 25rpx; }
+.cs-rows { margin-top: 20rpx; }
+.cs-row { display: flex; padding: 16rpx 0; border-bottom: 2rpx solid var(--line); }
+.cs-row:last-child { border-bottom: 0; }
+.cs-k { width: 150rpx; flex: none; font-size: 25rpx; color: var(--ink-3); font-weight: 600; }
+.cs-v { flex: 1; font-size: 27rpx; word-break: break-all; }
+.cs-err { margin-top: 16rpx; color: var(--bad); font-size: 25rpx; }
+.cs-acts { display: flex; margin-top: 32rpx; }
+.cs-acts .btn { flex: 1; height: 96rpx; }
+.cs-acts .btn + .btn { margin-left: 20rpx; }
