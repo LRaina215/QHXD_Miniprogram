@@ -78,7 +78,8 @@ tests/                           本地模拟测试（不打包进小程序）
 ```bash
 node tests/static-check.js           # JSON、页面文件、WXML 配对、事件方法、图片资源
 node tests/smoke.js [地址]             # 只读冒烟，默认 https://lingxunrobot.cn，可随时对线上跑
-node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对模拟链路跑
+node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对本机模拟链路跑
+YUNTUO_TOKEN=... node tests/live.js  # 公网控制链路：板载大模型助手、确认 / 取消、暂停继续、急停；仅 FPGA 为 mock 且空闲时运行
 node tests/preview/render.js         # 生成 tests/preview/out/*.html 版式预览
 ```
 

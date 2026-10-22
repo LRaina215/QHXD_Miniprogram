@@ -54,6 +54,13 @@ function targetLabel(cls, color) {
   return (color ? (COLOR_NAME[color] || color) + '色' : '') + (CLASS_NAME[cls] || cls);
 }
 
+/** 目标显示名：板载 LLM 有时把类别英文名（bottle）当 label，这时按类别 + 颜色换成中文 */
+function displayTarget(label, cls, color) {
+  if (label && /[\u4e00-\u9fff]/.test(label)) return label;
+  const c = cls || label;
+  return c ? targetLabel(c, color) : '';
+}
+
 function taskTone(state) {
   if (state === 'running' || state === 'pending') return 'run';
   if (state === 'completed') return 'ok';
@@ -102,5 +109,5 @@ function sinceText(iso) {
 
 module.exports = {
   TASK_TYPE, TASK_STATE, PHASE, FPGA_STATE, FPGA_MODE, LOC, CLASSES, CLASS_NAME, COLORS, COLOR_NAME, COLOR_HEX,
-  targetLabel, taskTone, linkTone, linkLabel, eventTone, fmt, clock, sinceText
+  targetLabel, displayTarget, taskTone, linkTone, linkLabel, eventTone, fmt, clock, sinceText
 };

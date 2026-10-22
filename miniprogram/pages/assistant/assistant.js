@@ -135,7 +135,7 @@ Page({
     if (c && c.pending_command_id) {
       const p = c.payload || {};
       let targetText = '';
-      if (p.target_class) targetText = p.label || L.targetLabel(p.target_class, p.color);
+      if (p.target_class) targetText = L.displayTarget(p.label, p.target_class, p.color);
       else if (p.waypoint_id) {
         const w = store.waypoints.find((x) => x.waypoint_id === p.waypoint_id);
         targetText = w ? w.name : String(p.waypoint_id);

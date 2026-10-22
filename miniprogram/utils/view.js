@@ -12,7 +12,7 @@ function hero(store) {
   const t = s && s.task_status;
   const idle = !t || t.task_type === 'placeholder';
   const goal = (s && s.nav_status && s.nav_status.current_goal) || '';
-  const target = goal.indexOf('target:') === 0 ? goal.slice(7) : '';
+  const target = goal.indexOf('target:') === 0 ? L.displayTarget(goal.slice(7)) : '';
   let title = '待命';
   if (!idle) {
     if (t.task_type === 'search_target') title = '寻找「' + (target || '目标') + '」';
