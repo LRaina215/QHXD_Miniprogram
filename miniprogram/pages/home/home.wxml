@@ -60,10 +60,11 @@
       <view wx:if="{{objects.locked}}" class="lock">目标已锁定</view>
     </view>
     <view class="stage-view">
-      <canvas type="2d" id="field" class="field-canvas {{stageView === 'map' ? '' : 'hidden'}}"></canvas>
+      <canvas wx:if="{{stageView === 'map'}}" type="2d" id="field" class="field-canvas"></canvas>
       <view wx:if="{{stageView === 'cam'}}" class="cam">
         <image wx:if="{{frameSrc}}" class="frame" src="{{frameSrc}}" mode="aspectFit" bindtap="onPreviewFrame"></image>
         <view wx:else class="cam-empty">{{frameMsg}}</view>
+        <view wx:if="{{frameSrc && frameStale}}" class="cam-stale">最后一帧 · {{frameMsg}}</view>
       </view>
       <view class="hud">
         <view wx:for="{{hud}}" wx:key="k" class="hud-item">

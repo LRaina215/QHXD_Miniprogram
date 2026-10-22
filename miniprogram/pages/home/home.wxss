@@ -58,10 +58,10 @@
 .lock { height: 44rpx; line-height: 44rpx; padding: 0 18rpx; border-radius: 999rpx; background: rgba(229, 38, 59, 0.2); color: #ff8a96; font-size: 22rpx; font-weight: 650; }
 .stage-view { position: relative; height: 640rpx; }
 .field-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
-.field-canvas.hidden { visibility: hidden; }
 .cam { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #05090d; display: flex; align-items: center; justify-content: center; }
 .frame { width: 100%; height: 100%; }
 .cam-empty { color: var(--stage-ink-2); font-size: 25rpx; }
+.cam-stale { position: absolute; left: 16rpx; right: 16rpx; bottom: 20rpx; padding: 14rpx 18rpx; border-radius: 16rpx; color: #fff; background: rgba(15, 18, 22, 0.85); font-size: 23rpx; }
 /* HUD 放在舞台顶部：右下角留给常驻急停按钮 */
 .hud { position: absolute; left: 16rpx; top: 16rpx; display: flex; }
 .hud-item { padding: 10rpx 16rpx; border-radius: 18rpx; background: rgba(15, 18, 22, 0.76); border: 2rpx solid rgba(255, 255, 255, 0.08); }

@@ -14,7 +14,9 @@ const ERROR_TEXT = {
   robot_emergency_stop: '机器人处于急停状态，请先解除急停',
   rate_limited: '操作太频繁，请稍后再试',
   request_timeout: '请求超时，RK3588 可能离线',
-  network_error: '网络不可用，请检查手机网络'
+  network_error: '网络不可用，请检查手机网络',
+  latest_frame_stale: '相机画面已过期，正在等待新画面',
+  latest_frame_not_found: '相机还没有画面，正在等待感知节点输出'
 };
 
 function getToken() {
@@ -44,6 +46,17 @@ function explain(error) {
   return ERROR_TEXT[code] || code;
 }
 
+// 图片接口的错误正文也是 ArrayBuffer；只解析有界的 UTF-8 JSON 错误，不处理成功图片。
+function errorPayload(body) {
+  if (!body || typeof body.byteLength !== 'number' || body.byteLength > 65536) return body;
+  try {
+    const escaped = Array.from(new Uint8Array(body), (b) => '%' + ('0' + b.toString(16)).slice(-2)).join('');
+    return JSON.parse(decodeURIComponent(escaped));
+  } catch (e) {
+    return null;
+  }
+}
+
 function request(path, options) {
   const opts = options || {};
   const url = config.buildUrl(path);
@@ -71,7 +84,10 @@ function request(path, options) {
           resolve({ ok: true, status, data: body, error: '' });
           return;
         }
-        const detail = body && typeof body === 'object' ? (body.detail || body.error) : '';
+        const payload = errorPayload(body);
+        // 已知错误码使用统一中文提示，避免把后端文件路径等诊断细节展示给用户。
+        const detail = payload && typeof payload === 'object'
+          ? (ERROR_TEXT[payload.error] ? payload.error : (payload.detail || payload.error)) : '';
         resolve({ ok: false, status, data: body, error: (typeof detail === 'string' && detail) || ('http_' + status) });
       },
       fail(err) {

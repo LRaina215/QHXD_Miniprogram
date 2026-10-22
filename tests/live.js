@@ -3,7 +3,7 @@
  * 小程序逻辑 -> 云端网关 -> RK3588 后端（板载 LLM）-> fpga_bridge。补 e2e.js 在本机模拟里测不到的部分：
  * 网关鉴权与白名单、板载大模型助手的时延与确认流程、公网 WebSocket 长连接稳定性。
  * 会下发运动指令：只在 FPGA 导航与控制都是模拟链路（mock）、当前无任务、未急停时运行；
- * 结束（包括失败）时取消任务、解除急停。Token 只从环境变量读，不打印。
+ * 前置检查通过后，失败收尾才允许取消任务、解除急停；检查未通过时不操作设备。Token 只从环境变量读，不打印。
  */
 const assert = require('assert');
 const { wx, sim, storage, mount, tap, startApp, log } = require('./wx-sim');
@@ -45,8 +45,9 @@ const notes = [];
 
 let store;
 let actions;
+let controlChecksPassed = false;
 async function cleanup() {
-  if (!store) return;
+  if (!store || !controlChecksPassed) return;
   try {
     if (store.estopActive()) await require('../miniprogram/utils/api').estop(false);
     if (store.taskActive()) await actions.run('cancel', {});
@@ -73,6 +74,7 @@ async function cleanup() {
     `FPGA 不是模拟链路（nav=${p0.nav_link} control=${p0.control_link}），不在实车上跑运动测试`);
   assert.ok(!store.taskActive(), '当前有任务在执行，先不打扰：' + JSON.stringify(store.task()));
   assert.ok(!store.estopActive(), '当前处于急停');
+  controlChecksPassed = true;
 
   const me = mount('pages/me/me');
   me.onShow();

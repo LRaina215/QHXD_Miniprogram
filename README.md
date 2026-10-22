@@ -3,10 +3,17 @@
 云拓（多模态复杂地形轮腿机器人）的移动端控制台。和 Web 控制台共用同一套后端契约与设计语言：
 看机器人在哪、在做什么、FPGA 平台是否正常，下发视觉任务 / 定点 / 巡检，用语音或文字指挥，随时急停。
 
+当前接手状态、验证范围与遗留事项见 [MAINTENANCE.md](MAINTENANCE.md)；后续开发约定见 [AGENTS.md](AGENTS.md)。
+
 ```text
 微信小程序 ──HTTPS / WSS──> lingxunrobot.cn（nginx：/api/ 与 /ws/）
-          ──> Cloud Gateway ──> RK3588 FastAPI ──> fpga_bridge ──> FPGA
+          ──> Cloud Gateway ──> RK3588 FastAPI
+
+仅执行导航 / 控制任务时，后端继续下发：
+RK3588 FastAPI ──> fpga_bridge ──> FPGA（当前未接板时使用 mock）
 ```
+
+小程序只通过网关访问 RK3588 后端接口，不直接连接 FPGA。助手解析、相机感知和业务接口由 RK3588 处理；FPGA 是运动任务的下游执行与反馈端。后端的“实车模式”也可以配合 mock FPGA 调试，不能据此判断已接真实板卡。
 
 ## 快速开始
 
@@ -73,10 +80,13 @@ tests/                           本地模拟测试（不打包进小程序）
 
 ## 测试
 
-需要 Node 18+，不依赖微信开发者工具。
+测试运行时需要提供全局 `fetch` 和 `WebSocket`。本次维护使用 Node 24.20.0；低版本 Node 不一定具备这两项，不依赖微信开发者工具。
 
 ```bash
 node tests/static-check.js           # JSON、页面文件、WXML 配对、事件方法、图片资源
+node tests/live-safety.js            # 公网测试的失败收尾保护；纯本地模拟，不连接设备
+node tests/store-lifecycle.js        # 服务器切换、迟到响应与离线状态；纯本地模拟
+node tests/camera.js                 # 图片错误解析、过期提示与相机轮询隔离；纯本地模拟
 node tests/smoke.js [地址]             # 只读冒烟，默认 https://lingxunrobot.cn，可随时对线上跑
 node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对本机模拟链路跑
 YUNTUO_TOKEN=... node tests/live.js  # 公网控制链路：板载大模型助手、确认 / 取消、暂停继续、急停；仅 FPGA 为 mock 且空闲时运行

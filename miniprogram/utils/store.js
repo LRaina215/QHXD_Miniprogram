@@ -28,7 +28,8 @@ class Store {
     this.listeners = {};
     this.running = false;
     this.timer = null;
-    this.inflight = false;
+    this.inflight = null;
+    this.session = 0;
     this.mapVersion = '';
 
     this.stateSocket = new LiveSocket(() => config.wsUrl('/ws/state'), 'state');
@@ -72,6 +73,9 @@ class Store {
 
   stop() {
     this.running = false;
+    // 使本轮尚未返回的 REST / 地图请求失效；新连接不等待旧请求。
+    this.session += 1;
+    this.inflight = null;
     clearInterval(this.timer);
     this.timer = null;
     this.stateSocket.disconnect();
@@ -81,11 +85,20 @@ class Store {
   /** 服务器地址或 Token 变更后重连 */
   restart() {
     this.stop();
+    this.state = null;
+    this.nav = null;
+    this.health = null;
+    this.waypoints = [];
+    this.events = [];
+    this.alerts = [];
     this.trail = [];
     this.mapVersion = '';
     this.mapMeta = null;
     this.mapImagePath = '';
+    this.lastStateAt = this.lastNavAt = 0;
     this.lastHealthAt = this.lastEventsAt = this.lastWaypointsAt = 0;
+    this.conn = { gateway: 'unknown', rk: false, publicControl: null, live: false, navLive: false, error: '' };
+    ['state', 'nav', 'map', 'events', 'alerts', 'waypoints', 'conn'].forEach((event) => this.emit(event));
     this.start();
   }
 
@@ -94,30 +107,36 @@ class Store {
     return this.tick(true);
   }
 
-  async tick(force) {
-    if (this.inflight) return;
-    this.inflight = true;
+  tick(force) {
+    if (this.inflight) return this.inflight;
+    const session = this.session;
+    this.inflight = this.poll(force, session).finally(() => {
+      // 旧轮询结束时不能解除新连接的并发保护。
+      if (session === this.session) this.inflight = null;
+    });
+    return this.inflight;
+  }
+
+  async poll(force, session) {
     const now = Date.now();
     const jobs = [];
-    try {
-      if (force || !this.stateSocket.connected || now - this.lastStateAt > 6000) jobs.push(this.pullState());
-      if (force || !this.navSocket.connected || now - this.lastNavAt > 6000) jobs.push(this.pullNav());
-      if (now - this.lastHealthAt > config.HEALTH_INTERVAL_MS) { this.lastHealthAt = now; jobs.push(this.pullHealth()); }
-      if (now - this.lastEventsAt > config.EVENTS_INTERVAL_MS) { this.lastEventsAt = now; jobs.push(this.pullEvents()); }
-      if (now - this.lastWaypointsAt > 60000) { this.lastWaypointsAt = now; jobs.push(this.pullWaypoints()); }
-      await Promise.all(jobs);
-      const rk = this.lastStateAt > 0 && Date.now() - this.lastStateAt < config.STALE_AFTER_MS;
-      if (rk !== this.conn.rk) {
-        this.conn.rk = rk;
-        this.emit('conn');
-      }
-    } finally {
-      this.inflight = false;
+    if (force || !this.stateSocket.connected || now - this.lastStateAt > 6000) jobs.push(this.pullState(session));
+    if (force || !this.navSocket.connected || now - this.lastNavAt > 6000) jobs.push(this.pullNav(session));
+    if (now - this.lastHealthAt > config.HEALTH_INTERVAL_MS) { this.lastHealthAt = now; jobs.push(this.pullHealth(session)); }
+    if (now - this.lastEventsAt > config.EVENTS_INTERVAL_MS) { this.lastEventsAt = now; jobs.push(this.pullEvents(session)); }
+    if (now - this.lastWaypointsAt > 60000) { this.lastWaypointsAt = now; jobs.push(this.pullWaypoints(session)); }
+    await Promise.all(jobs);
+    if (session !== this.session) return;
+    const rk = this.lastStateAt > 0 && Date.now() - this.lastStateAt < config.STALE_AFTER_MS;
+    if (rk !== this.conn.rk) {
+      this.conn.rk = rk;
+      this.emit('conn');
     }
   }
 
-  async pullState() {
+  async pullState(session = this.session) {
     const res = await api.getState();
+    if (session !== this.session) return;
     const data = api.unwrap(res);
     if (data) {
       this.conn.error = '';
@@ -128,13 +147,15 @@ class Store {
     }
   }
 
-  async pullNav() {
+  async pullNav(session = this.session) {
     const res = await api.getNavigation();
+    if (session !== this.session) return;
     if (res.ok) this.setNav(api.unwrap(res));
   }
 
-  async pullHealth() {
+  async pullHealth(session = this.session) {
     const res = await api.getGatewayHealth();
+    if (session !== this.session) return;
     if (res.ok) {
       this.health = res.data;
       this.conn.gateway = 'online';
@@ -142,14 +163,17 @@ class Store {
       this.conn.publicControl = 'public_control_enabled' in res.data ? !!res.data.public_control_enabled : null;
     } else {
       // 旧网关在主域名下没有健康接口：只要 /api 能通就算网关在线，公网控制开关未知
-      this.conn.gateway = this.lastStateAt ? 'online' : (res.error ? 'offline' : 'unknown');
+      this.health = null;
+      const fresh = this.lastStateAt > 0 && Date.now() - this.lastStateAt < config.STALE_AFTER_MS;
+      this.conn.gateway = fresh ? 'online' : (res.error ? 'offline' : 'unknown');
       this.conn.publicControl = null;
     }
     this.emit('conn');
   }
 
-  async pullEvents() {
+  async pullEvents(session = this.session) {
     const [events, alerts] = await Promise.all([api.getTaskEvents(30), api.getAlerts()]);
+    if (session !== this.session) return;
     const ev = api.unwrap(events);
     if (Array.isArray(ev)) {
       this.events = ev;
@@ -162,8 +186,9 @@ class Store {
     }
   }
 
-  async pullWaypoints() {
+  async pullWaypoints(session = this.session) {
     const list = api.unwrap(await api.getWaypoints());
+    if (session !== this.session) return;
     if (Array.isArray(list)) {
       this.waypoints = list.filter((w) => w.enabled !== false);
       this.emit('waypoints');
@@ -201,13 +226,13 @@ class Store {
     this.emit('nav');
   }
 
-  async loadMap() {
+  async loadMap(session = this.session) {
+    const version = this.mapVersion;
     const meta = api.unwrap(await api.getMapMetadata());
-    if (!meta) return;
-    this.mapMeta = meta;
-    this.mapImagePath = '';
+    if (!meta || session !== this.session || version !== this.mapVersion) return;
+    let imagePath = '';
     if (!String(meta.version || '').startsWith('canvas')) {
-      this.mapImagePath = await new Promise((resolve) => {
+      imagePath = await new Promise((resolve) => {
         wx.downloadFile({
           url: api.mapImageUrl(meta.version),
           success: (res) => resolve(res.statusCode === 200 ? res.tempFilePath : ''),
@@ -215,6 +240,9 @@ class Store {
         });
       });
     }
+    if (session !== this.session || version !== this.mapVersion) return;
+    this.mapMeta = meta;
+    this.mapImagePath = imagePath;
     this.emit('map');
   }
 

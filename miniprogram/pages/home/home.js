@@ -23,6 +23,7 @@ Page({
     mapCtx: '无先验图 · 里程计坐标系',
     frameSrc: '',
     frameMsg: '正在获取相机画面…',
+    frameStale: false,
     sheet: { show: false, title: '', rows: [], loading: false, error: '' }
   },
 
@@ -48,7 +49,7 @@ Page({
       store.on('map', () => this.loadRaster())
     ];
     this.renderAll();
-    this.initCanvas();
+    if (this.data.stageView === 'map') this.initCanvas();
     this.anim = setInterval(() => { if (store.nav && store.nav.target) this.drawField(); }, 90);
     if (this.data.stageView === 'cam') this.startFrames();
   },
@@ -115,7 +116,7 @@ Page({
     }
     wx.createSelectorQuery().select('#field').fields({ node: true, size: true }).exec((res) => {
       const r = res && res[0];
-      if (!r || !r.node) return;
+      if (!r || !r.node || this.data.stageView !== 'map') return;
       const dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2;
       r.node.width = Math.round(r.width * dpr);
       r.node.height = Math.round(r.height * dpr);
@@ -135,8 +136,10 @@ Page({
       this.drawField();
       return;
     }
-    const img = this.canvas.createImage();
+    const canvas = this.canvas;
+    const img = canvas.createImage();
     img.onload = () => {
+      if (this.canvas !== canvas) return;
       this.raster = fieldMap.prepareRaster(img, (w, h) => wx.createOffscreenCanvas({ type: '2d', width: w, height: h }));
       this.drawField();
     };
@@ -163,20 +166,39 @@ Page({
     const v = e.currentTarget.dataset.v;
     if (v === this.data.stageView) return;
     this.setData({ stageView: v }, () => {
-      if (v === 'cam') this.startFrames();
-      else { this.stopFrames(); this.drawField(); }
+      if (v === 'cam') {
+        this.canvas = this.ctx = this.size = this.raster = null;
+        this.startFrames();
+      } else {
+        this.stopFrames();
+        this.initCanvas();
+      }
     });
   },
 
   /* ---------- 相机画面（最新检测帧，2 s 刷新） ---------- */
   startFrames() {
     this.stopFrames();
+    const session = this.frameSession;
+    const base = config.baseUrl();
+    if (this.frameBase !== base) {
+      this.frameBase = base;
+      this.setData({ frameSrc: '', frameStale: false, frameMsg: '正在获取相机画面…' });
+    }
+    let pending = false;
     const pull = async () => {
-      const res = await api.getLatestFrame();
-      if (res.ok && res.data && res.data.byteLength) {
-        this.setData({ frameSrc: 'data:image/jpeg;base64,' + wx.arrayBufferToBase64(res.data) });
-      } else if (!this.data.frameSrc) {
-        this.setData({ frameMsg: res.status === 404 ? '相机还没有画面（感知节点未运行）' : '相机画面暂不可用' });
+      if (pending || session !== this.frameSession || base !== config.baseUrl()) return;
+      pending = true;
+      try {
+        const res = await api.getLatestFrame();
+        if (session !== this.frameSession || base !== config.baseUrl()) return;
+        if (res.ok && res.data && res.data.byteLength) {
+          this.setData({ frameSrc: 'data:image/jpeg;base64,' + wx.arrayBufferToBase64(res.data), frameStale: false, frameMsg: '' });
+        } else {
+          this.setData({ frameStale: !!this.data.frameSrc, frameMsg: res.ok ? '相机画面暂不可用' : api.explain(res.error) });
+        }
+      } finally {
+        pending = false;
       }
     };
     pull();
@@ -184,6 +206,7 @@ Page({
   },
 
   stopFrames() {
+    this.frameSession = (this.frameSession || 0) + 1;
     clearInterval(this.frameTimer);
     this.frameTimer = null;
   },
