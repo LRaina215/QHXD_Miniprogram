@@ -19,7 +19,7 @@
    | socket | `wss://lingxunrobot.cn` |
    | downloadFile | `https://lingxunrobot.cn` |
 
-   `api.lingxunrobot.cn` 的证书已过期，不要再用。
+   统一用主域名，不再配 `api.lingxunrobot.cn`：只维护一个合法域名和一张证书（主域名证书 2026-12-27 到期）。
 3. 编译运行。总览、地图、相机、事件这些只读内容不需要 Token。
 4. 助手对话、下发任务、急停都是 POST，网关要求 Token：在「我的 → 访问 Token」里填入公网 Token
    （与 Cloud Gateway 的 `PUBLIC_API_TOKEN` 一致）。Token 只存在本机缓存，不要写进代码或文档。
@@ -77,7 +77,8 @@ tests/                           本地模拟测试（不打包进小程序）
 
 ```bash
 node tests/static-check.js           # JSON、页面文件、WXML 配对、事件方法、图片资源
-node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000
+node tests/smoke.js [地址]             # 只读冒烟，默认 https://lingxunrobot.cn，可随时对线上跑
+node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对模拟链路跑
 node tests/preview/render.js         # 生成 tests/preview/out/*.html 版式预览
 ```
 

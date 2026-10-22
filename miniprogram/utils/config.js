@@ -2,7 +2,7 @@
  * 云拓小程序运行配置。
  *
  * 公网链路：小程序 -> https://lingxunrobot.cn（Nginx）-> Cloud Gateway -> RK3588 后端。
- * 主域名的 /api/ 与 /ws/ 已由 Nginx 转发到网关；api.lingxunrobot.cn 的证书已过期，不再使用。
+ * 主域名的 /api/ 与 /ws/ 已由 Nginx 转发到网关。api.lingxunrobot.cn 也能用，但统一走主域名，只维护一个域名和一张证书。
  * 现场联调可在「我的 > 调试」里临时改成 RK3588 局域网地址（需开发者工具或真机调试关闭域名校验）。
  */
 
