@@ -1,95 +1,130 @@
 <!-- 数据图表页面 -->
 <view class="page-charts">
 
-  <!-- 时间范围选择 -->
-  <view class="time-filter">
-    <view class="time-option {{timeRange === 3600000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="3600000">1小时</view>
-    <view class="time-option {{timeRange === 21600000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="21600000">6小时</view>
-    <view class="time-option {{timeRange === 86400000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="86400000">24小时</view>
-  </view>
-
-  <!-- 电量曲线 -->
-  <view class="card chart-card">
-    <view class="chart-header">
-      <view class="chart-title">
-        <text class="chart-dot battery"></text>
-        <text>电量</text>
+  <view class="data-hero">
+    <view class="data-hero-top">
+      <view class="data-title-block">
+        <text class="data-kicker">RUNTIME DATA</text>
+        <text class="data-title">运行数据台</text>
+        <text class="data-subtitle">{{currentMode}} · {{currentDataSource}} · {{currentFreshness}}</text>
       </view>
-      <text class="chart-value">{{currentBattery}}%</text>
-    </view>
-    <view class="chart-container">
-      <canvas type="2d" id="batteryChart" class="chart-canvas"></canvas>
-    </view>
-  </view>
-
-  <!-- 温度曲线 -->
-  <view class="card chart-card">
-    <view class="chart-header">
-      <view class="chart-title">
-        <text class="chart-dot co"></text>
-        <text>温度</text>
+      <view class="data-live-badge">
+        <text>LIVE</text>
       </view>
-      <text class="chart-value">{{currentTemp}} ℃</text>
     </view>
-    <view class="chart-container">
-      <canvas type="2d" id="tempChart" class="chart-canvas"></canvas>
-    </view>
-  </view>
 
-  <!-- 湿度曲线 -->
-  <view class="card chart-card">
-    <view class="chart-header">
-      <view class="chart-title">
-        <text class="chart-dot ch4"></text>
-        <text>湿度</text>
+    <view class="runtime-grid">
+      <view class="runtime-item">
+        <text class="runtime-label">电量</text>
+        <text class="runtime-value">{{currentBattery}}%</text>
       </view>
-      <text class="chart-value">{{currentHumidity}} %</text>
-    </view>
-    <view class="chart-container">
-      <canvas type="2d" id="humidityChart" class="chart-canvas"></canvas>
-    </view>
-  </view>
-
-  <!-- 空气质量曲线 -->
-  <view class="card chart-card">
-    <view class="chart-header">
-      <view class="chart-title">
-        <text class="chart-dot aqi"></text>
-        <text>空气质量(AQI)</text>
+      <view class="runtime-item">
+        <text class="runtime-label">温度</text>
+        <text class="runtime-value">{{currentTemp}}℃</text>
       </view>
-      <text class="chart-value">{{currentAQI}}</text>
+      <view class="runtime-item">
+        <text class="runtime-label">湿度</text>
+        <text class="runtime-value">{{currentHumidity}}%</text>
+      </view>
+      <view class="runtime-item">
+        <text class="runtime-label">视觉</text>
+        <text class="runtime-value compact">{{currentDetection}}</text>
+      </view>
     </view>
-    <view class="chart-container">
-      <canvas type="2d" id="aqiChart" class="chart-canvas"></canvas>
+
+    <view class="runtime-detail">
+      <view class="runtime-detail-row">
+        <text>IMU</text>
+        <text class="runtime-detail-value">{{currentImu}}</text>
+      </view>
+      <view class="runtime-detail-row">
+        <text>最近视觉事件</text>
+        <text class="runtime-detail-value">{{latestEvent}}</text>
+      </view>
+      <view class="runtime-detail-row command {{latestCommandTone}}">
+        <text>最近命令</text>
+        <text class="runtime-detail-value">{{latestCommand}}</text>
+      </view>
     </view>
   </view>
 
-  <!-- 数据统计 -->
+  <view class="trend-section">
+    <view class="section-head">
+      <view>
+        <text class="section-kicker">Trend</text>
+        <text class="section-title">运行趋势</text>
+      </view>
+      <view class="time-filter">
+        <view class="time-option {{timeRange === 3600000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="3600000">1h</view>
+        <view class="time-option {{timeRange === 21600000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="21600000">6h</view>
+        <view class="time-option {{timeRange === 86400000 ? 'active' : ''}}" bindtap="setTimeRange" data-range="86400000">24h</view>
+      </view>
+    </view>
+
+    <view class="card chart-card">
+      <view class="chart-header">
+        <view class="chart-title">
+          <text class="chart-dot battery"></text>
+          <text>电量</text>
+        </view>
+        <text class="chart-value">{{currentBattery}}%</text>
+      </view>
+      <view class="chart-container">
+        <canvas type="2d" id="batteryChart" class="chart-canvas"></canvas>
+      </view>
+    </view>
+
+    <view class="card chart-card">
+      <view class="chart-header">
+        <view class="chart-title">
+          <text class="chart-dot temp"></text>
+          <text>温度</text>
+        </view>
+        <text class="chart-value">{{currentTemp}}℃</text>
+      </view>
+      <view class="chart-container">
+        <canvas type="2d" id="tempChart" class="chart-canvas"></canvas>
+      </view>
+    </view>
+
+    <view class="card chart-card">
+      <view class="chart-header">
+        <view class="chart-title">
+          <text class="chart-dot humidity"></text>
+          <text>湿度</text>
+        </view>
+        <text class="chart-value">{{currentHumidity}}%</text>
+      </view>
+      <view class="chart-container">
+        <canvas type="2d" id="humidityChart" class="chart-canvas"></canvas>
+      </view>
+    </view>
+  </view>
+
   <view class="card">
     <view class="card-title">
-      <text class="title-icon">📊</text>
-      <text>数据统计</text>
+      <text>缓存与接入状态</text>
     </view>
     <view class="stats-grid">
       <view class="stat-item">
-        <text class="stat-label">缓存点数</text>
+        <text class="stat-label">电量</text>
         <text class="stat-value">{{dataCounts.battery}}</text>
-        <text class="stat-desc">电量</text>
+        <text class="stat-desc">缓存点</text>
       </view>
       <view class="stat-item">
-        <text class="stat-label">缓存点数</text>
+        <text class="stat-label">温度</text>
         <text class="stat-value">{{dataCounts.temperature}}</text>
-        <text class="stat-desc">温度</text>
+        <text class="stat-desc">缓存点</text>
       </view>
       <view class="stat-item">
-        <text class="stat-label">缓存点数</text>
+        <text class="stat-label">湿度</text>
         <text class="stat-value">{{dataCounts.humidity}}</text>
-        <text class="stat-desc">湿度</text>
+        <text class="stat-desc">缓存点</text>
       </view>
-      <view class="stat-item">
-        <text class="stat-label">缓存点数</text>
+      <view class="stat-item muted">
+        <text class="stat-label">AQI</text>
         <text class="stat-value">{{dataCounts.airQuality}}</text>
-        <text class="stat-desc">AQI</text>
+        <text class="stat-desc">未接入</text>
       </view>
     </view>
     <view class="clear-data-btn" bindtap="clearData">

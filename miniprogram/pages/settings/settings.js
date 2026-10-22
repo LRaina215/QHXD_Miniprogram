@@ -1,76 +1,45 @@
 /**
  * 设置页面
- * Cloud Gateway 配置、legacy MQTT、告警中心、关于信息
+ * Cloud Gateway 配置、模式切换、告警中心、关于信息
  */
 const app = getApp();
 const util = require('../../utils/util');
 const dataCache = require('../../utils/dataCache');
 const config = require('../../utils/config');
 const api = require('../../utils/api');
+const commandClient = require('../../utils/commandClient');
 
 Page({
   data: {
-    mqttConnected: false,
     baseUrl: config.BASE_URL,
     wsStateUrl: config.WS_STATE_URL,
     wsImuUrl: config.WS_IMU_URL,
     apiToken: '',
+    hasToken: false,
     cloudOnline: false,
     rkOnline: false,
     publicControlEnabled: false,
     healthDetail: '等待检测',
-    brokerUrl: '',
-    mqttUsername: '',
-    mqttPassword: '',
-    subscribeTopic: config.LEGACY_MQTT_CONFIG.subscribeTopic,
-    publishTopic: config.LEGACY_MQTT_CONFIG.publishTopic,
+    systemMode: '--',
+    switchingMode: false,
     alarms: []
   },
 
   onShow() {
-    this._loadConfig();
+    this._loadToken();
     this._loadAlarms();
-    this._checkConnection();
+    this._loadSystemMode();
     this.refreshHealth();
   },
 
   /**
-   * 加载保存的公网 Token 与 legacy MQTT 配置
+   * 加载保存的公网 Token
    */
-  _loadConfig() {
-    const saved = wx.getStorageSync('mqtt_config');
-    const savedConfig = saved ? JSON.parse(saved) : {};
+  _loadToken() {
+    const token = wx.getStorageSync(config.TOKEN_STORAGE_KEY) || '';
     this.setData({
-      apiToken: wx.getStorageSync(config.TOKEN_STORAGE_KEY) || '',
-      brokerUrl: savedConfig.brokerUrl || app.globalData.mqttConfig.brokerUrl,
-      mqttUsername: savedConfig.username || app.globalData.mqttConfig.username || '',
-      mqttPassword: savedConfig.password || app.globalData.mqttConfig.password || '',
-      subscribeTopic: savedConfig.subscribeTopic || app.globalData.mqttConfig.subscribeTopic,
-      publishTopic: savedConfig.publishTopic || app.globalData.mqttConfig.publishTopic
-    });
-  },
-
-  /**
-   * 保存配置
-   */
-  saveConfig() {
-    const config = {
-      brokerUrl: this.data.brokerUrl,
-      username: this.data.mqttUsername,
-      password: this.data.mqttPassword,
-      subscribeTopic: this.data.subscribeTopic,
-      publishTopic: this.data.publishTopic
-    };
-
-    wx.setStorageSync('mqtt_config', JSON.stringify(config));
-
-    // 更新全局配置
-    Object.assign(app.globalData.mqttConfig, config);
-
-    wx.showToast({
-      title: '配置已保存',
-      icon: 'success',
-      duration: 1500
+      apiToken: token,
+      hasToken: !!token
     });
   },
 
@@ -79,11 +48,12 @@ Page({
     if (token) {
       wx.setStorageSync(config.TOKEN_STORAGE_KEY, token);
       wx.showToast({ title: 'Token 已保存', icon: 'success' });
-      this.setData({ apiToken: token });
+      this.setData({ apiToken: token, hasToken: true });
       return;
     }
     wx.removeStorageSync(config.TOKEN_STORAGE_KEY);
     wx.showToast({ title: 'Token 已清除', icon: 'none' });
+    this.setData({ hasToken: false });
   },
 
   /**
@@ -93,45 +63,6 @@ Page({
     const field = e.currentTarget.dataset.field;
     const value = e.detail.value;
     this.setData({ [field]: value });
-  },
-
-  /**
-   * 切换 legacy MQTT 连接
-   */
-  toggleMQTT() {
-    if (this.data.mqttConnected) {
-      // 断开
-      app.disconnectMQTT();
-      this.setData({ mqttConnected: false });
-      wx.showToast({ title: '已断开', icon: 'none' });
-    } else {
-      // 连接
-      const config = {
-        brokerUrl: this.data.brokerUrl,
-        username: this.data.mqttUsername,
-        password: this.data.mqttPassword,
-        subscribeTopic: this.data.subscribeTopic,
-        publishTopic: this.data.publishTopic
-      };
-
-      wx.showLoading({ title: '连接中...' });
-
-      // 先传入配置
-      Object.assign(app.globalData.mqttConfig, config);
-
-      try {
-        app.connectMQTT(config);
-
-        // 等待连接结果
-        setTimeout(() => {
-          wx.hideLoading();
-          this._checkConnection();
-        }, 2000);
-      } catch (e) {
-        wx.hideLoading();
-        wx.showToast({ title: '连接失败', icon: 'none' });
-      }
-    }
   },
 
   async refreshHealth() {
@@ -154,21 +85,81 @@ Page({
     });
   },
 
-  /**
-   * 检查连接状态
-   */
-  _checkConnection() {
-    this.setData({
-      mqttConnected: app.globalData.mqttConnected
-    });
+  _loadSystemMode() {
+    const telemetry = app.globalData.telemetry;
+    const mode = telemetry?.system?.mode || app.globalData.rawState?.system_mode?.mode || '--';
+    this.setData({ systemMode: mode });
+  },
+
+  async switchSystemMode() {
+    if (this.data.switchingMode) return;
+    const currentMode = this.data.systemMode;
+    const targetMode = currentMode === 'mock' ? 'real' : 'mock';
+
+    if (!commandClient.getToken()) {
+      wx.showToast({ title: '请先在 Token 卡片中保存公网 Token', icon: 'none', duration: 2500 });
+      return;
+    }
+
+    if (currentMode === '--') {
+      wx.showToast({ title: '尚未获取到当前模式，请等待状态同步', icon: 'none', duration: 2000 });
+      return;
+    }
+
+    // 乐观更新：先切换 UI
+    const previousMode = currentMode;
+    this.setData({ systemMode: targetMode, switchingMode: true });
+
+    try {
+      const result = await new Promise((resolve) => {
+        commandClient.switchMode(targetMode).then(resolve);
+      });
+
+      if (!result.ok) {
+        // 失败：回滚 UI
+        this.setData({ systemMode: previousMode, switchingMode: false });
+        const errMsg = this._formatModeError(result.error);
+        wx.showToast({ title: errMsg, icon: 'none', duration: 3000 });
+        return;
+      }
+
+      // 成功：确认新 mode
+      this.setData({ switchingMode: false });
+      const data = result.data?.data;
+      const newMode = data?.system_mode?.mode || targetMode;
+      this.setData({ systemMode: newMode });
+      wx.showToast({ title: `已切换到 ${newMode === 'mock' ? 'Mock' : 'Real'} 模式`, icon: 'success' });
+      app.refreshRobotSnapshot({ includeHealth: true });
+    } catch (err) {
+      // 网络异常：回滚 UI
+      this.setData({ systemMode: previousMode, switchingMode: false });
+      wx.showToast({ title: '网络请求失败，请检查连接后重试', icon: 'none', duration: 2500 });
+    }
+  },
+
+  _formatModeError(error) {
+    if (!error) return '模式切换失败';
+    const map = {
+      missing_public_api_token: '请先在 Token 卡片中保存公网 Token',
+      unauthorized: '公网 Token 无效，请重新保存',
+      robot_offline: 'RK3588 当前离线，无法切换',
+      rate_limited: '请求过于频繁，请稍后再试',
+    };
+    if (map[error]) return map[error];
+    // 透传服务器返回的具体错误
+    if (typeof error === 'string' && error.length < 60) return error;
+    return '模式切换失败，请检查网络后重试';
   },
 
   /**
    * 加载告警历史
    */
   _loadAlarms() {
+    const alarms = (app.globalData.alarms || []).map(item => Object.assign({}, item, {
+      displayTime: util.formatTime((item.time || 0) / 1000)
+    }));
     this.setData({
-      alarms: app.globalData.alarms || []
+      alarms
     });
   },
 
@@ -178,7 +169,7 @@ Page({
   clearCache() {
     wx.showModal({
       title: '清除缓存',
-      content: '确定要清除所有本地缓存数据吗？(不包括MQTT配置)',
+      content: '确定要清除所有本地缓存数据吗？公网 Token 不会被清除。',
       success: (res) => {
         if (res.confirm) {
           dataCache.clear();
@@ -200,5 +191,4 @@ Page({
   /**
    * 工具函数
    */
-  formatTime: util.formatTime
 });

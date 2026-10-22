@@ -12,6 +12,14 @@ Page({
     currentTemp: '--',
     currentHumidity: '--',
     currentAQI: '--',
+    currentMode: '--',
+    currentImu: '--',
+    currentDetection: '--',
+    currentFreshness: '--',
+    currentDataSource: '--',
+    latestEvent: '--',
+    latestCommand: '--',
+    latestCommandTone: 'muted',
     dataCounts: { battery: 0, temperature: 0, humidity: 0, airQuality: 0 }
   },
 
@@ -54,6 +62,7 @@ Page({
         if (telemetry.robot && telemetry.robot.battery !== undefined) {
           update.currentBattery = telemetry.robot.battery;
         }
+        Object.assign(update, this._buildRuntimeUpdate(telemetry));
         this.setData(update);
       }
       this._updateCounts();
@@ -66,12 +75,74 @@ Page({
   _updateCurrentValues() {
     const telemetry = app.globalData.telemetry;
     if (!telemetry) return;
-    this.setData({
+    const update = {
       currentBattery: telemetry.robot?.battery ?? '--',
       currentTemp: telemetry.sensors?.temperature ?? '--',
       currentHumidity: telemetry.sensors?.humidity ?? '--',
       currentAQI: telemetry.sensors?.air_quality ?? '--'
-    });
+    };
+    Object.assign(update, this._buildRuntimeUpdate(telemetry));
+    this.setData(update);
+  },
+
+  _buildRuntimeUpdate(telemetry) {
+    return {
+      currentMode: telemetry.system?.mode || telemetry.mode || '--',
+      currentImu: this._formatImu(telemetry.imu),
+      currentDetection: this._formatDetection(telemetry.perception),
+      currentFreshness: this._formatFreshness(telemetry.meta),
+      currentDataSource: telemetry.meta?.dataSource || '--',
+      latestEvent: this._formatLatestEvent(telemetry.perception),
+      latestCommand: this._formatCommandLog(telemetry.commandLogs),
+      latestCommandTone: this._formatCommandTone(telemetry.commandLogs)
+    };
+  },
+
+  _formatImu(imu) {
+    if (!imu) return '--';
+    const yaw = imu.yaw ?? imu.euler?.yaw;
+    const pitch = imu.pitch ?? imu.euler?.pitch;
+    const roll = imu.roll ?? imu.euler?.roll;
+    if (yaw === undefined && pitch === undefined && roll === undefined) return '--';
+    return `Y ${this._formatNum(yaw)} / P ${this._formatNum(pitch)} / R ${this._formatNum(roll)}`;
+  },
+
+  _formatDetection(perception) {
+    if (!perception) return '--';
+    const label = perception.detection || perception.label || '--';
+    const confidence = perception.confidence;
+    if (confidence === undefined || confidence === null) return label;
+    return `${label} ${(confidence * 100).toFixed(0)}%`;
+  },
+
+  _formatCommandLog(logs) {
+    if (!logs || !logs.length) return '--';
+    const item = logs[0];
+    return `${item.command || item.type || 'command'} / ${item.accepted === false ? 'rejected' : 'accepted'}`;
+  },
+
+  _formatCommandTone(logs) {
+    if (!logs || !logs.length) return 'muted';
+    return logs[0].accepted === false ? 'bad' : 'ok';
+  },
+
+  _formatLatestEvent(perception) {
+    const events = perception && Array.isArray(perception.events) ? perception.events : [];
+    if (!events.length) return '--';
+    const item = events[0];
+    return item.message || item.event_type || item.type || item.label || '视觉事件';
+  },
+
+  _formatFreshness(meta) {
+    if (!meta) return '--';
+    if (meta.isStale) return meta.ageSeconds !== null && meta.ageSeconds !== undefined ? `${meta.ageSeconds}s 前 / 过期` : '过期';
+    if (meta.ageSeconds !== null && meta.ageSeconds !== undefined) return `${meta.ageSeconds}s 前`;
+    return meta.updatedAt ? '已同步' : '--';
+  },
+
+  _formatNum(value) {
+    if (value === undefined || value === null || Number.isNaN(Number(value))) return '--';
+    return Number(value).toFixed(1);
   },
 
   _updateCounts() {
@@ -102,11 +173,6 @@ Page({
       label: '湿度 (%)'
     });
 
-    this._drawChart('aqiChart', dataCache.getRange('airQuality', range), {
-      color: '#48484A',
-      fillColor: 'rgba(72, 72, 74, 0.06)',
-      label: 'AQI'
-    });
   },
 
   /**

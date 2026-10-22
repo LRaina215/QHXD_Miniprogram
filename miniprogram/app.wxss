@@ -1,10 +1,62 @@
-/* 全局样式 - 简约克制 · 高级感浅色主题 */
+/* ===== 全局样式 & 设计 Token — 灵巡 Sentinel ===== */
 
-/* 页面基础 */
 page {
-  background-color: #F2F2F7;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'PingFang SC', sans-serif;
-  color: #1C1C1E;
+  /* ---- 背景 ---- */
+  --color-bg: #F2F2F7;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F9F9FB;
+  --color-surface-raised: #FFFFFF;
+
+  /* ---- 文字 ---- */
+  --color-text-primary: #1C1C1E;
+  --color-text-secondary: #3A3A3C;
+  --color-text-tertiary: #8E8E93;
+  --color-text-muted: #AEAEB2;
+  --color-text-placeholder: #C7C7CC;
+
+  /* ---- 品牌 / 功能色 ---- */
+  --color-accent: #1A6DD4;
+  --color-accent-light: #E8F0FE;
+  --color-accent-ios: #007AFF;
+  --color-success: #248A3D;
+  --color-success-light: #E3F5E8;
+  --color-warning: #C76B15;
+  --color-warning-light: #FFF3E0;
+  --color-danger: #C42E2A;
+  --color-danger-light: #FEE8E7;
+  --color-danger-ios: #D32F2F;
+
+  /* ---- 边框 ---- */
+  --color-border: #E5E5EA;
+  --color-border-light: #F0F0F3;
+  --color-border-subtle: #E8E8ED;
+
+  /* ---- 驾驶舱（深色模块）---- */
+  --color-cockpit-bg: #15181C;
+  --color-cockpit-text: #FFFFFF;
+
+  /* ---- 圆角 ---- */
+  --radius-sm: 8rpx;
+  --radius-md: 12rpx;
+  --radius-lg: 16rpx;
+  --radius-xl: 18rpx;
+  --radius-pill: 999rpx;
+
+  /* ---- 间距 ---- */
+  --space-xs: 6rpx;
+  --space-sm: 10rpx;
+  --space-md: 16rpx;
+  --space-lg: 20rpx;
+  --space-xl: 28rpx;
+
+  /* ---- 字体 ---- */
+  --font-mono: 'SF Mono', 'Menlo', 'Courier New', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'PingFang SC', sans-serif;
+
+  /* ---- 页面基础 ---- */
+  background-color: var(--color-bg);
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
   font-size: 28rpx;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -12,73 +64,84 @@ page {
 
 /* 卡片 */
 .card {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 28rpx;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
   margin: 12rpx 20rpx;
 }
 
 .card-title {
   font-size: 28rpx;
   font-weight: 600;
-  color: #1C1C1E;
-  letter-spacing: -0.2rpx;
+  color: var(--color-text-primary);
+  letter-spacing: 0;
   margin-bottom: 18rpx;
   display: flex;
   align-items: center;
 }
 
-.card-title .title-icon {
-  font-size: 28rpx;
-  margin-right: 10rpx;
+.card-title .title-mark {
+  min-width: 52rpx;
+  height: 30rpx;
+  margin-right: 12rpx;
+  padding: 0 8rpx;
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  background: var(--color-accent-light);
+  font-size: 18rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+  text-align: center;
+  box-sizing: border-box;
 }
 
-/* 状态标签 - 极简风格 */
+/* 状态标签 */
 .status-tag {
   display: inline-block;
   padding: 4rpx 14rpx;
-  border-radius: 10rpx;
+  border-radius: var(--radius-sm);
   font-size: 20rpx;
   font-weight: 500;
   letter-spacing: 0.2rpx;
 }
 
-.status-tag.online     { background: #E3F5E8; color: #248A3D; }
-.status-tag.offline    { background: #F2F2F7; color: #8E8E93; }
-.status-tag.charging   { background: #FFF3E0; color: #C76B15; }
-.status-tag.navigating { background: #E8F0FE; color: #1A6DD4; }
-.status-tag.error      { background: #FEE8E7; color: #D32F2F; }
-.status-tag.idle       { background: #F2F2F7; color: #8E8E93; }
-.status-tag.running    { background: #E8F0FE; color: #1A6DD4; }
-.status-tag.pending    { background: #FFF3E0; color: #C76B15; }
-.status-tag.completed  { background: #E3F5E8; color: #248A3D; }
-.status-tag.cancelled  { background: #F2F2F7; color: #8E8E93; }
+.status-tag.online     { background: var(--color-success-light); color: var(--color-success); }
+.status-tag.offline    { background: var(--color-surface); color: var(--color-text-tertiary); }
+.status-tag.charging   { background: var(--color-warning-light); color: var(--color-warning); }
+.status-tag.navigating { background: var(--color-accent-light); color: var(--color-accent); }
+.status-tag.error      { background: var(--color-danger-light); color: var(--color-danger-ios); }
+.status-tag.idle       { background: var(--color-surface); color: var(--color-text-tertiary); }
+.status-tag.running    { background: var(--color-accent-light); color: var(--color-accent); }
+.status-tag.pending    { background: var(--color-warning-light); color: var(--color-warning); }
+.status-tag.completed  { background: var(--color-success-light); color: var(--color-success); }
+.status-tag.failed     { background: var(--color-danger-light); color: var(--color-danger-ios); }
+.status-tag.cancelled  { background: var(--color-surface); color: var(--color-text-tertiary); }
 
 /* 通用按钮 */
 .btn-primary {
-  background: #007AFF;
+  background: var(--color-accent-ios);
   color: #FFFFFF;
-  border-radius: 12rpx;
+  border-radius: var(--radius-md);
   padding: 18rpx 30rpx;
   font-size: 26rpx;
   font-weight: 500;
   border: none;
   text-align: center;
-  letter-spacing: -0.1rpx;
+  letter-spacing: 0;
 }
 .btn-primary:active { opacity: 0.85; }
 
 .btn-secondary {
-  background: #F2F2F7;
-  color: #007AFF;
-  border-radius: 12rpx;
+  background: var(--color-surface);
+  color: var(--color-accent-ios);
+  border-radius: var(--radius-md);
   padding: 18rpx 30rpx;
   font-size: 26rpx;
   font-weight: 500;
   border: none;
   text-align: center;
 }
-.btn-secondary:active { background: #E5E5EA; }
+.btn-secondary:active { background: var(--color-border); }
 
 /* 空状态 */
 .empty-state {
@@ -89,7 +152,7 @@ page {
   padding: 60rpx 40rpx;
 }
 .empty-icon { font-size: 40rpx; opacity: 0.25; margin-bottom: 10rpx; }
-.empty-text { font-size: 24rpx; color: #C7C7CC; }
+.empty-text { font-size: 24rpx; color: var(--color-text-placeholder); }
 
 /* 分隔线 */
-.divider { height: 1rpx; background: #E5E5EA; margin: 16rpx 0; }
+.divider { height: 1rpx; background: var(--color-border); margin: var(--space-md) 0; }

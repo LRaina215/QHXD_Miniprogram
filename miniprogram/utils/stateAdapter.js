@@ -27,7 +27,26 @@ function adaptTask(task) {
 
 function pickPrimaryObject(objects) {
   if (!Array.isArray(objects) || objects.length === 0) return null;
-  return objects.slice().sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0];
+  return objects.slice().sort((a, b) => (getObjectConfidence(b) || 0) - (getObjectConfidence(a) || 0))[0];
+}
+
+function getObjectLabel(object) {
+  if (!object) return '';
+  return firstDefined(object.class_name, object.label, object.name, object.class, object.type, '');
+}
+
+function getObjectConfidence(object) {
+  if (!object) return 0;
+  return firstDefined(object.confidence, object.score, object.probability, 0);
+}
+
+function getSystemMode(systemMode) {
+  if (!systemMode) return { mode: 'unknown', updatedAt: null };
+  if (typeof systemMode === 'string') return { mode: systemMode, updatedAt: null };
+  return {
+    mode: systemMode.mode || systemMode.state || 'unknown',
+    updatedAt: systemMode.updated_at || systemMode.timestamp || null
+  };
 }
 
 function adaptAlerts(alerts) {
@@ -69,8 +88,9 @@ function adaptState(rawState, extras = {}) {
 
   const navState = nav.state || 'offline';
   const battery = firstDefined(device.battery_percent, 0);
-  const frameAvailable = extras.frameStatus === 'ok';
-  const frameMissing = extras.frameStatus === 'missing' || extras.frameStatus === 'error';
+  const frameAvailable = extras.frameStatus !== 'missing';
+  const frameMissing = extras.frameStatus === 'missing';
+  const systemMode = getSystemMode(state.system_mode || state.mode);
 
   return {
     timestamp: Math.floor(Date.now() / 1000),
@@ -107,8 +127,8 @@ function adaptState(rawState, extras = {}) {
       firmware_version: 'RK3588'
     },
     perception: {
-      detection: primaryObject ? primaryObject.class_name : '',
-      confidence: primaryObject ? firstDefined(primaryObject.confidence, 0) : 0,
+      detection: primaryObject ? getObjectLabel(primaryObject) : '',
+      confidence: primaryObject ? getObjectConfidence(primaryObject) : 0,
       objects,
       events,
       source: detection ? detection.source : '',
@@ -122,6 +142,8 @@ function adaptState(rawState, extras = {}) {
     },
     tasks: task ? [task] : [],
     currentTask: task,
+    commandLogs: Array.isArray(extras.commandLogs) ? extras.commandLogs : [],
+    navigation: extras.navigation || null,
     image: {
       url: api.getLatestFrameUrl(),
       timestamp: Math.floor(Date.now() / 1000),
@@ -130,6 +152,10 @@ function adaptState(rawState, extras = {}) {
     },
     health: extras.health || null,
     imu: extras.imu || null,
+    system: {
+      mode: systemMode.mode,
+      updatedAt: systemMode.updatedAt
+    },
     meta: {
       robotId: config.ROBOT_ID,
       updatedAt: state.updated_at || null,
@@ -140,6 +166,7 @@ function adaptState(rawState, extras = {}) {
       dataSource: extras.dataSource || 'rest',
       restOnline: !!extras.restOnline,
       wsConnected: !!extras.wsConnected,
+      navigationWsConnected: !!extras.navigationWsConnected,
       cloudOnline: !!(extras.health && extras.health.status === 'ok'),
       rkOnline: !!(extras.health && extras.health.rk_online),
       publicControlEnabled: !!(extras.health && extras.health.public_control_enabled),

@@ -33,7 +33,7 @@ function goToWaypoint(waypointId) {
   });
 }
 
-function startPatrol(patrolId = 'patrol_default') {
+function startPatrol(patrolId = 'default_patrol') {
   return post('/api/mission/start_patrol', {
     patrol_id: patrolId,
     source: 'wechat-miniprogram',
@@ -62,12 +62,28 @@ function returnHome() {
   });
 }
 
+function cancel() {
+  return post('/api/mission/cancel', {
+    source: 'wechat-miniprogram',
+    requested_by: 'operator'
+  });
+}
+
 function smartCommand(text) {
-  return post('/api/voice/smart_command', {
-    text,
-    source: 'wechat-miniprogram-smart',
-    requested_by: 'operator',
-    generate_tts: true
+  const headers = {
+    'Content-Type': 'application/json',
+    ...authHeader()
+  };
+  return api.request('/api/voice/smart_command', {
+    method: 'POST',
+    data: {
+      text,
+      source: 'wechat-miniprogram-smart',
+      requested_by: 'operator',
+      generate_tts: true
+    },
+    header: headers,
+    timeout: 45000
   });
 }
 
@@ -79,6 +95,30 @@ function confirmVoiceCommand(pendingCommandId, confirmed) {
   });
 }
 
+function switchMode(mode) {
+  const token = getToken();
+  if (!token) {
+    return Promise.resolve({ ok: false, error: 'missing_public_api_token', statusCode: 0 });
+  }
+  return api.request('/api/system/mode/switch', {
+    method: 'POST',
+    data: {
+      mode,
+      source: 'wechat-miniprogram',
+      requested_by: 'operator'
+    },
+    header: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    timeout: 15000
+  });
+}
+
+function getVideoSession() {
+  return post('/api/video/session', {});
+}
+
 module.exports = {
   getToken,
   goToWaypoint,
@@ -86,6 +126,9 @@ module.exports = {
   pause,
   resume,
   returnHome,
+  cancel,
   smartCommand,
-  confirmVoiceCommand
+  confirmVoiceCommand,
+  switchMode,
+  getVideoSession
 };

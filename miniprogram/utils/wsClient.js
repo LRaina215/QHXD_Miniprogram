@@ -36,7 +36,10 @@ class StateWebSocketClient {
       this.socketTask = wx.connectSocket({
         url: config.WS_STATE_URL,
         success: () => {},
-        fail: (err) => this._handleError(err)
+        fail: (err) => {
+          this._handleError(err);
+          this._scheduleReconnect();
+        }
       });
       this._bind();
     } catch (err) {
@@ -61,8 +64,10 @@ class StateWebSocketClient {
 
   _bind() {
     if (!this.socketTask) return;
+    const socketTask = this.socketTask;
 
-    this.socketTask.onOpen(() => {
+    socketTask.onOpen(() => {
+      if (this.socketTask !== socketTask) return;
       this.connected = true;
       this.connecting = false;
       this.lastMessageAt = Date.now();
@@ -70,7 +75,8 @@ class StateWebSocketClient {
       this._startHeartbeat();
     });
 
-    this.socketTask.onMessage((event) => {
+    socketTask.onMessage((event) => {
+      if (this.socketTask !== socketTask) return;
       this.lastMessageAt = Date.now();
       let payload = event.data;
       try {
@@ -82,11 +88,14 @@ class StateWebSocketClient {
       this._emit('message', payload);
     });
 
-    this.socketTask.onError((err) => {
-      this._handleError(err);
+    socketTask.onError((err) => {
+      if (this.socketTask !== socketTask) return;
+      this._handleError(err, socketTask);
+      if (!this.closedManually) this._scheduleReconnect();
     });
 
-    this.socketTask.onClose((event) => {
+    socketTask.onClose((event) => {
+      if (this.socketTask !== socketTask) return;
       this.connected = false;
       this.connecting = false;
       this.socketTask = null;
@@ -99,12 +108,23 @@ class StateWebSocketClient {
   _startHeartbeat() {
     this._stopHeartbeat();
     this.heartbeatTimer = setInterval(() => {
-      if (!this.socketTask || !this.connected) return;
+      const socketTask = this.socketTask;
+      if (!socketTask || !this.connected) return;
       if (Date.now() - this.lastMessageAt > 15000) {
-        this._emit('error', { error: 'ws_message_timeout' });
+        this._handleError({ error: 'ws_message_timeout' }, socketTask);
+        this._closeSocket(socketTask);
+        if (!this.closedManually) this._scheduleReconnect();
+        return;
       }
       try {
-        this.socketTask.send({ data: 'ping' });
+        socketTask.send({
+          data: 'ping',
+          fail: (err) => {
+            this._handleError(err || { error: 'ws_send_failed' }, socketTask);
+            this._closeSocket(socketTask);
+            if (!this.closedManually) this._scheduleReconnect();
+          }
+        });
       } catch (e) {}
     }, 5000);
   }
@@ -128,9 +148,17 @@ class StateWebSocketClient {
     }
   }
 
-  _handleError(err) {
+  _closeSocket(socketTask) {
+    try {
+      if (socketTask) socketTask.close();
+    } catch (e) {}
+  }
+
+  _handleError(err, socketTask) {
+    if (socketTask && this.socketTask !== socketTask) return;
     this.connected = false;
     this.connecting = false;
+    this._stopHeartbeat();
     this._emit('error', err || { error: 'ws_error' });
   }
 

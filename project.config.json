@@ -45,7 +45,7 @@
     "disableSWC": true
   },
   "appid": "wx1f68b56b794572da",
-  "projectname": "quickstart-wx-cloud",
+  "projectname": "Sentinel",
   "libVersion": "3.16.1",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {
@@ -62,13 +62,7 @@
       "list": []
     },
     "miniprogram": {
-      "list": [
-        {
-          "id": -1,
-          "name": "db guide",
-          "pathName": "pages/databaseGuide/databaseGuide"
-        }
-      ]
+      "list": []
     }
   },
   "compileType": "miniprogram",

@@ -1,8 +1,8 @@
-const mqttManager = require('./utils/mqtt');
 const config = require('./utils/config');
 const api = require('./utils/api');
 const stateAdapter = require('./utils/stateAdapter');
 const wsClient = require('./utils/wsClient');
+const navigationWsClient = require('./utils/navigationWsClient');
 
 App({
   onLaunch() {
@@ -16,9 +16,10 @@ App({
       rawState: null,
       telemetry: null,
       imu: null,
-      mqttConfig: { ...config.LEGACY_MQTT_CONFIG },
-      mqttConnected: false,
+      commandLogs: [],
       wsConnected: false,
+      navigationWsConnected: false,
+      navigation: null,
       restOnline: false,
       cloudOnline: false,
       rkOnline: false,
@@ -34,9 +35,8 @@ App({
       tasks: []
     };
 
-    this._setupMQTTCallbacks();
     this._setupWSCallbacks();
-    this._loadSavedConfig();
+    this._setupNavigationWSCallbacks();
     this.startRobotSync();
   },
 
@@ -50,29 +50,7 @@ App({
 
   _pollTimer: null,
   _healthTick: 0,
-
-  _setupMQTTCallbacks() {
-    mqttManager.onConnect(() => {
-      this.globalData.mqttConnected = true;
-      this._emitEvent('mqttStatusChange', true);
-    });
-
-    mqttManager.onDisconnect(() => {
-      this.globalData.mqttConnected = false;
-      this._emitEvent('mqttStatusChange', false);
-    });
-
-    mqttManager.onError(() => {
-      this.globalData.mqttConnected = false;
-      this._emitEvent('mqttStatusChange', false);
-    });
-
-    mqttManager.onMessage((topic, data) => {
-      if (topic === this.globalData.mqttConfig.subscribeTopic) {
-        this._handleTelemetry(data, 'legacy-mqtt');
-      }
-    });
-  },
+  _syncInFlight: false,
 
   _setupWSCallbacks() {
     wsClient.on('open', () => {
@@ -99,13 +77,30 @@ App({
     });
   },
 
-  _loadSavedConfig() {
-    try {
-      const saved = wx.getStorageSync(config.LEGACY_MQTT_STORAGE_KEY);
-      if (saved) {
-        Object.assign(this.globalData.mqttConfig, JSON.parse(saved));
+  _setupNavigationWSCallbacks() {
+    navigationWsClient.on('open', () => {
+      this.globalData.navigationWsConnected = true;
+      this._emitEvent('navigationStatusChange', this.globalData.navigation);
+      this._emitEvent('robotSyncStatusChange', this._syncStatus());
+    });
+
+    navigationWsClient.on('message', (payload) => {
+      const data = payload && payload.data !== undefined ? payload.data : payload;
+      if (data) {
+        this.globalData.navigation = data;
+        this._emitEvent('navigationStatusChange', data);
       }
-    } catch (e) {}
+    });
+
+    navigationWsClient.on('error', () => {
+      this.globalData.navigationWsConnected = false;
+      this._emitEvent('robotSyncStatusChange', this._syncStatus());
+    });
+
+    navigationWsClient.on('close', () => {
+      this.globalData.navigationWsConnected = false;
+      this._emitEvent('robotSyncStatusChange', this._syncStatus());
+    });
   },
 
   startRobotSync() {
@@ -120,6 +115,7 @@ App({
       }, config.POLL_INTERVAL_MS);
     }
     wsClient.connect();
+    navigationWsClient.connect();
   },
 
   stopRobotSync() {
@@ -128,39 +124,51 @@ App({
       this._pollTimer = null;
     }
     wsClient.disconnect();
+    navigationWsClient.disconnect();
   },
 
   async refreshRobotSnapshot(options = {}) {
+    if (this._syncInFlight) return;
+    this._syncInFlight = true;
+    try {
+      await this._refreshRobotSnapshot(options);
+    } finally {
+      this._syncInFlight = false;
+    }
+  },
+
+  async _refreshRobotSnapshot(options = {}) {
     const includeHealth = options.includeHealth !== false;
     const includeFrame = !!options.includeFrame;
+
+    if (includeHealth) {
+      const healthResult = await api.getHealth();
+      this._applyHealthResult(healthResult);
+      if (healthResult.ok && !this.globalData.rkOnline) {
+        this._markRkUnavailable();
+        return;
+      }
+    } else if (this.globalData.cloudOnline && !this.globalData.rkOnline) {
+      this._markRkUnavailable();
+      return;
+    }
 
     const tasks = [
       api.getStateLatest(),
       api.getAlerts(),
-      api.getImuLatest()
+      api.getImuLatest(),
+      api.getCommandLogs(),
+      api.getNavigationLatest()
     ];
-    if (includeHealth) tasks.push(api.getHealth());
     if (includeFrame) tasks.push(api.checkLatestFrame());
 
     const results = await Promise.all(tasks);
     const stateResult = results[0];
     const alertsResult = results[1];
     const imuResult = results[2];
-    const healthResult = includeHealth ? results[3] : null;
-    const frameResult = includeFrame ? results[includeHealth ? 4 : 3] : null;
-
-    if (healthResult) {
-      if (healthResult.ok) {
-        this.globalData.health = healthResult.data;
-        this.globalData.cloudOnline = healthResult.data && healthResult.data.status === 'ok';
-        this.globalData.rkOnline = !!(healthResult.data && healthResult.data.rk_online);
-        this.globalData.publicControlEnabled = !!(healthResult.data && healthResult.data.public_control_enabled);
-      } else {
-        this.globalData.cloudOnline = false;
-        this.globalData.rkOnline = false;
-        this.globalData.lastError = `健康检查失败：${healthResult.error}`;
-      }
-    }
+    const logsResult = results[3];
+    const navigationResult = results[4];
+    const frameResult = includeFrame ? results[5] : null;
 
     if (alertsResult.ok) {
       this.globalData.alarms = stateAdapter.adaptAlerts((alertsResult.data && alertsResult.data.data) || []);
@@ -168,10 +176,36 @@ App({
 
     if (imuResult.ok) {
       this.globalData.imu = imuResult.data ? imuResult.data.data : null;
+      if (this.globalData.imu) {
+        const imu = this.globalData.imu;
+        console.log('[IMU] received source=', imu.source, 'has_imu=', !!imu.imu, 'yaw=', imu.imu?.euler_deg?.yaw);
+      } else {
+        console.warn('[IMU] ok but data is null/empty');
+      }
+    } else {
+      console.warn('[IMU] request failed:', imuResult.error, 'status:', imuResult.statusCode);
+    }
+
+    if (logsResult.ok) {
+      this.globalData.commandLogs = (logsResult.data && logsResult.data.data) || [];
+    }
+
+    if (navigationResult.ok) {
+      this.globalData.navigation = navigationResult.data ? navigationResult.data.data : null;
+      this._emitEvent('navigationStatusChange', this.globalData.navigation);
     }
 
     if (frameResult) {
-      this.globalData.frameStatus = frameResult.ok ? 'ok' : frameResult.statusCode === 404 ? 'missing' : 'error';
+      if (frameResult.ok) {
+        this.globalData.frameStatus = 'ok';
+      } else {
+        this.globalData.frameStatus = frameResult.statusCode === 404 ? 'missing' : 'error';
+        if (this.globalData.frameStatus === 'missing') {
+          this.globalData.lastError = '视觉最新帧 404，请确认 YOLO 相机服务已启动';
+        }
+      }
+    } else {
+      this.globalData.frameStatus = 'ok';
     }
 
     if (stateResult.ok && stateResult.data && stateResult.data.data) {
@@ -180,9 +214,36 @@ App({
       this._handleRawState(stateResult.data.data, 'rest');
     } else {
       this.globalData.restOnline = false;
-      this.globalData.lastError = `状态请求失败：${stateResult.error}`;
+      this.globalData.lastError = this.globalData.cloudOnline && !this.globalData.rkOnline
+        ? '云端在线，RK3588 未连接或后端未启动'
+        : `状态请求失败：${stateResult.error}`;
       this._emitEvent('robotSyncStatusChange', this._syncStatus());
     }
+  },
+
+  _applyHealthResult(healthResult) {
+    if (!healthResult) return;
+
+    if (healthResult.ok) {
+      const data = healthResult.data || {};
+      this.globalData.health = data;
+      this.globalData.cloudOnline = data.status === 'ok';
+      this.globalData.rkOnline = !!data.rk_online;
+      this.globalData.publicControlEnabled = !!data.public_control_enabled;
+    } else {
+      this.globalData.cloudOnline = false;
+      this.globalData.rkOnline = false;
+      this.globalData.publicControlEnabled = false;
+      this.globalData.lastError = `健康检查失败：${healthResult.error}`;
+    }
+    this._emitEvent('robotSyncStatusChange', this._syncStatus());
+  },
+
+  _markRkUnavailable() {
+    this.globalData.restOnline = false;
+    this.globalData.frameStatus = 'unknown';
+    this.globalData.lastError = '云端在线，RK3588 未连接或后端未启动';
+    this._emitEvent('robotSyncStatusChange', this._syncStatus());
   },
 
   _handleRawState(rawState, dataSource) {
@@ -191,6 +252,8 @@ App({
       alerts: this.globalData.alarms,
       health: this.globalData.health,
       imu: this.globalData.imu,
+      commandLogs: this.globalData.commandLogs,
+      navigation: this.globalData.navigation,
       frameStatus: this.globalData.frameStatus,
       dataSource,
       restOnline: this.globalData.restOnline,
@@ -235,6 +298,7 @@ App({
     return {
       restOnline: this.globalData.restOnline,
       wsConnected: this.globalData.wsConnected,
+      navigationWsConnected: this.globalData.navigationWsConnected,
       cloudOnline: this.globalData.cloudOnline,
       rkOnline: this.globalData.rkOnline,
       publicControlEnabled: this.globalData.publicControlEnabled,
@@ -255,30 +319,6 @@ App({
   },
   _emitEvent(event, data) {
     (this._eventListeners[event] || []).forEach(cb => cb(data));
-  },
-
-  connectMQTT(legacyConfig) {
-    if (legacyConfig) Object.assign(this.globalData.mqttConfig, legacyConfig);
-    try {
-      mqttManager.connect(this.globalData.mqttConfig);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  },
-
-  disconnectMQTT() {
-    mqttManager.disconnect();
-    this.globalData.mqttConnected = false;
-  },
-
-  publishCommand(command) {
-    const topic = this.globalData.mqttConfig.publishTopic;
-    return mqttManager.publish(topic, JSON.stringify({
-      command,
-      timestamp: Math.floor(Date.now() / 1000),
-      source: 'wechat_miniprogram_legacy_mqtt'
-    }));
   },
 
   getConnectionStatus() {

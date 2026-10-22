@@ -1,84 +1,178 @@
 <!-- 任务中心页面 -->
 <view class="page-tasks">
 
-  <view class="control-banner {{publicControlEnabled && hasToken ? 'ready' : 'locked'}}">
-    <text>{{publicControlEnabled ? '公网控制已开启' : '公网控制未开启'}}</text>
-    <text class="control-banner-sub">{{hasToken ? 'Token 已保存' : '未保存 Token，任务按钮仅作预览'}}</text>
+  <view class="mission-hero">
+    <view class="mission-hero-top">
+      <view class="mission-title-block">
+        <text class="mission-kicker">MISSION CONSOLE</text>
+        <text class="mission-title">任务执行台</text>
+        <text class="mission-subtitle">{{publicControlEnabled ? '公网控制开启' : '公网控制保护'}} · {{hasToken ? 'Token 已保存' : 'Token 未设置'}}</text>
+      </view>
+      <view class="mission-permit {{publicControlEnabled && hasToken ? 'ready' : 'locked'}}">
+        <text>{{publicControlEnabled && hasToken ? '可执行' : '只读'}}</text>
+      </view>
+    </view>
+
+    <view class="mission-status-grid">
+      <view class="mission-status-item {{publicControlEnabled ? 'ok' : 'warn'}}">
+        <text class="status-label">控制开关</text>
+        <text class="status-value">{{publicControlEnabled ? '开启' : '保护'}}</text>
+      </view>
+      <view class="mission-status-item {{hasToken ? 'ok' : 'warn'}}">
+        <text class="status-label">公网 Token</text>
+        <text class="status-value">{{hasToken ? '已保存' : '未设置'}}</text>
+      </view>
+      <view class="mission-status-item {{lastError ? 'bad' : 'ok'}}">
+        <text class="status-label">链路错误</text>
+        <text class="status-value">{{lastError ? '存在' : '无'}}</text>
+      </view>
+    </view>
+
+    <view class="current-mission-panel">
+      <view class="current-mission-main" wx:if="{{currentTask}}">
+        <text class="task-glyph">{{currentTask.displayGlyph}}</text>
+        <view class="task-info">
+          <text class="task-type">{{currentTask.displayTypeText}}</text>
+          <text class="task-desc">ID: {{currentTask.id}} · {{currentTask.displayTimeText}}</text>
+        </view>
+        <view class="task-status status-tag {{currentTask.status}}">{{currentTask.displayStatusText}}</view>
+      </view>
+      <view class="current-mission-main standby" wx:else>
+        <text class="task-glyph">ST</text>
+        <view class="task-info">
+          <text class="task-type">待命</text>
+          <text class="task-desc">暂无进行中的任务</text>
+        </view>
+        <view class="task-status status-tag idle">待机中</view>
+      </view>
+    </view>
   </view>
 
-  <!-- 当前任务 -->
+  <view class="card action-card">
+    <view class="card-title">
+      <text>任务操作</text>
+      <text class="card-subtitle">{{operationBusy ? '提交中' : '真实接口'}}</text>
+    </view>
+    <view class="action-grid">
+      <view class="action-btn primary {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="runMissionAction" data-action="patrol">
+        <text class="action-code">PT</text>
+        <view class="action-copy">
+          <text class="action-title">开始巡检</text>
+          <text class="action-desc">默认巡检路线</text>
+        </view>
+      </view>
+      <view class="action-btn {{publicControlEnabled && hasToken && item.configured ? '' : 'disabled'}}" wx:for="{{waypoints}}" wx:key="waypoint_id" bindtap="runMissionAction" data-action="waypoint" data-waypoint-id="{{item.waypoint_id}}">
+        <text class="action-code">{{item.displayCode}}</text>
+        <view class="action-copy">
+          <text class="action-title">{{item.name}}</text>
+          <text class="action-desc">{{item.displayStatus}}</text>
+        </view>
+      </view>
+      <view class="action-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="runMissionAction" data-action="pause">
+        <text class="action-code">Ⅱ</text>
+        <view class="action-copy">
+          <text class="action-title">暂停</text>
+          <text class="action-desc">暂停当前任务</text>
+        </view>
+      </view>
+      <view class="action-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="runMissionAction" data-action="resume">
+        <text class="action-code">▶</text>
+        <view class="action-copy">
+          <text class="action-title">恢复</text>
+          <text class="action-desc">继续执行任务</text>
+        </view>
+      </view>
+      <view class="action-btn warn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="runMissionAction" data-action="return_home">
+        <text class="action-code">HM</text>
+        <view class="action-copy">
+          <text class="action-title">返回 Home</text>
+          <text class="action-desc">返航保护</text>
+        </view>
+      </view>
+      <view class="action-btn warn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="runMissionAction" data-action="cancel">
+        <text class="action-code">X</text>
+        <view class="action-copy">
+          <text class="action-title">取消任务</text>
+          <text class="action-desc">取消后不可恢复</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="card">
     <view class="card-title">
-      <text class="title-icon">📋</text>
-      <text>当前任务</text>
+      <text>执行回执</text>
+      <text class="card-subtitle">最近8条</text>
     </view>
-    <view class="current-task" wx:if="{{currentTask}}">
-      <text class="task-type-icon">{{getTaskTypeIcon(currentTask.type)}}</text>
-      <view class="task-info">
-        <text class="task-type">{{getTaskTypeText(currentTask.type)}}</text>
-        <text class="task-desc">ID: {{currentTask.id}} · {{formatRelativeTime(currentTask.timestamp)}}</text>
+
+    <view class="receipt-list" wx:if="{{commandLogs.length > 0}}">
+      <view class="receipt-item {{item.accepted ? 'accepted' : 'rejected'}}" wx:for="{{commandLogs}}" wx:key="id">
+        <text class="receipt-mark">{{item.accepted ? 'OK' : 'NO'}}</text>
+        <view class="receipt-copy">
+          <text class="receipt-command">{{item.command}}</text>
+          <text class="receipt-detail">{{item.detail}}</text>
+        </view>
+        <view class="status-tag {{item.accepted ? 'completed' : 'failed'}}">{{item.accepted ? 'accepted' : 'rejected'}}</view>
       </view>
-      <view class="task-status status-tag {{currentTask.status}}">{{getStatusText(currentTask.status)}}</view>
     </view>
+
     <view class="empty-state" wx:else>
-      <text class="empty-icon">📋</text>
-      <text class="empty-text">暂无进行中的任务</text>
+      <text class="empty-icon">⌁</text>
+      <text class="empty-text">暂无命令回执</text>
     </view>
   </view>
 
-  <!-- 快捷创建任务 -->
   <view class="card">
     <view class="card-title">
-      <text class="title-icon">➕</text>
-      <text>新建任务</text>
+      <text>任务事件时间线</text>
+      <text class="card-subtitle">Nav2 / Mission</text>
     </view>
-    <view class="task-create-grid">
-      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="patrol">
-        <text class="tcb-icon">🔍</text>
-        <text class="tcb-label">巡逻任务</text>
+
+    <view class="task-event-list" wx:if="{{taskEvents.length > 0}}">
+      <view class="task-event-item {{item.levelClass}}" wx:for="{{taskEvents}}" wx:key="event_id">
+        <view class="task-event-dot"></view>
+        <view class="task-event-copy">
+          <view class="task-event-head">
+            <text class="task-event-type">{{item.displayType}}</text>
+            <text class="task-event-time">{{item.displayTime}}</text>
+          </view>
+          <text class="task-event-detail">{{item.displayDetail}}</text>
+          <text class="task-event-meta" wx:if="{{item.displayMeta}}">{{item.displayMeta}}</text>
+        </view>
       </view>
-      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="delivery">
-        <text class="tcb-icon">📦</text>
-        <text class="tcb-label">配送任务</text>
-      </view>
-      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="inspect">
-        <text class="tcb-icon">🔧</text>
-        <text class="tcb-label">巡检任务</text>
-      </view>
-      <view class="task-create-btn {{publicControlEnabled && hasToken ? '' : 'disabled'}}" bindtap="createTask" data-type="charge">
-        <text class="tcb-icon">⚡</text>
-        <text class="tcb-label">返回充电</text>
-      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">--</text>
+      <text class="empty-text">暂无任务事件</text>
     </view>
   </view>
 
-  <!-- 历史任务列表 -->
   <view class="card">
     <view class="card-title">
-      <text class="title-icon">🕐</text>
-      <text>历史任务</text>
+      <text>任务记录</text>
       <text class="card-subtitle">最近10条</text>
     </view>
 
     <view class="task-list" wx:if="{{tasks.length > 0}}">
       <view class="task-item" wx:for="{{tasks}}" wx:key="id">
         <view class="task-item-left">
-          <text class="task-item-icon">{{getTaskTypeIcon(item.type)}}</text>
+          <text class="task-item-icon">{{item.displayGlyph}}</text>
           <view class="task-item-info">
-            <text class="task-item-type">{{getTaskTypeText(item.type)}}</text>
-            <text class="task-item-time">{{formatRelativeTime(item.timestamp)}}</text>
+            <text class="task-item-type">{{item.displayTypeText}}</text>
+            <text class="task-item-time">{{item.displayTimeText}}</text>
           </view>
         </view>
         <view class="task-item-right">
-          <view class="status-tag {{item.status}}">{{getStatusText(item.status)}}</view>
-          <view class="task-cancel-btn" wx:if="{{item.status === 'pending' || item.status === 'running'}}" bindtap="cancelTask" data-id="{{item.id}}" data-type="{{item.type}}">取消</view>
+          <view class="status-tag {{item.status}}">{{item.displayStatusText}}</view>
+          <view class="task-cancel-btn" wx:if="{{item.status === 'pending' || item.status === 'running' || item.status === 'paused'}}" bindtap="cancelTask" data-id="{{item.id}}" data-type="{{item.type}}">取消</view>
         </view>
       </view>
     </view>
 
     <view class="empty-state" wx:else>
-      <text class="empty-icon">📄</text>
-      <text class="empty-text">暂无历史任务</text>
+      <text class="empty-icon">--</text>
+      <text class="empty-text">暂无任务记录</text>
     </view>
   </view>
 

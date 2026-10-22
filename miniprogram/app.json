@@ -5,6 +5,7 @@
     "pages/charts/charts",
     "pages/settings/settings"
   ],
+  "lazyCodeLoading": "requiredComponents",
   "window": {
     "navigationBarBackgroundColor": "#FFFFFF",
     "navigationBarTitleText": "Sentinel",
@@ -14,31 +15,31 @@
   },
   "tabBar": {
     "color": "#AEAEB2",
-    "selectedColor": "#1C1C1E",
+    "selectedColor": "#1A6DD4",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "iconPath": "./icon_dashboard.png",
+        "iconPath": "icon_dashboard.png",
         "selectedIconPath": "icon_dashboard_active.png",
         "text": "仪表盘"
       },
       {
         "pagePath": "pages/tasks/tasks",
-        "iconPath": "./icon_tasks.png",
+        "iconPath": "icon_tasks.png",
         "selectedIconPath": "icon_tasks_active.png",
         "text": "任务"
       },
       {
         "pagePath": "pages/charts/charts",
-        "iconPath": "./icon_charts.png",
+        "iconPath": "icon_charts.png",
         "selectedIconPath": "icon_charts_active.png",
         "text": "数据"
       },
       {
         "pagePath": "pages/settings/settings",
-        "iconPath": "./icon_settings.png",
+        "iconPath": "icon_settings.png",
         "selectedIconPath": "icon_settings_active.png",
         "text": "设置"
       }

@@ -141,18 +141,18 @@ function getTaskTypeText(type) {
  */
 function getTaskTypeIcon(type) {
   const map = {
-    'patrol': '🔍',
-    'delivery': '📦',
-    'inspect': '🔧',
-    'charge': '⚡',
-    'go_to': '📍',
-    'go_to_waypoint': '📍',
-    'start_patrol': '🔍',
-    'return_home': '⚡',
-    'placeholder': '📋',
-    'custom': '📋'
+    'patrol': 'PAT',
+    'delivery': 'DEL',
+    'inspect': 'INS',
+    'charge': 'CHG',
+    'go_to': 'NAV',
+    'go_to_waypoint': 'NAV',
+    'start_patrol': 'PAT',
+    'return_home': 'RTN',
+    'placeholder': 'TPL',
+    'custom': 'CMD'
   };
-  return map[type] || '📋';
+  return map[type] || 'CMD';
 }
 
 /**
