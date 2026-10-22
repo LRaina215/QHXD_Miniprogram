@@ -4,7 +4,7 @@
       <view class="hello">
         <image class="hello-logo" src="/assets/brand/mark.png" mode="aspectFit"></image>
         <text class="hello-title">我是云拓，想让我做什么？</text>
-        <text class="hello-sub">按住下方按钮说话，或者点一句试试。运动类命令会先请你确认，再交给 FPGA 执行。</text>
+        <text class="hello-sub">按住说话使用当前设备的麦克风，也可以输入文字。运动命令确认后由 RK3588 后端下发。</text>
         <view class="ex">
           <view wx:for="{{examples}}" wx:key="*this" class="ex-item" data-text="{{item}}" bindtap="onExample">{{item}}</view>
         </view>

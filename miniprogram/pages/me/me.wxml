@@ -43,7 +43,7 @@
         <view class="seg-item {{mode === 'mock' ? 'on' : ''}}" data-mode="mock" bindtap="onMode">模拟</view>
         <view class="seg-item {{mode === 'real' ? 'on' : ''}}" data-mode="real" bindtap="onMode">实车</view>
       </view>
-      <text class="desc gap">模拟模式下数据来自后端模拟器；实车模式接 FPGA 与传感器。</text>
+      <text class="desc gap">模拟模式使用后端模拟数据；实车模式读取 RK3588 的实时状态。是否接入真实 FPGA，以上方连接状态为准。</text>
     </view>
   </view>
 
