@@ -13,7 +13,7 @@ const ERROR_TEXT = {
   robot_offline: '机器人离线，命令没有发出',
   robot_emergency_stop: '机器人处于急停状态，请先解除急停',
   rate_limited: '操作太频繁，请稍后再试',
-  request_timeout: '请求超时，RK3588 可能离线',
+  request_timeout: '请求超时，请检查连接并查看最新状态',
   network_error: '网络不可用，请检查手机网络',
   latest_frame_stale: '相机画面已过期，正在等待新画面',
   latest_frame_not_found: '相机还没有画面，正在等待感知节点输出'
@@ -46,6 +46,14 @@ function explain(error) {
   return ERROR_TEXT[code] || code;
 }
 
+function failureText(result) {
+  if (result && result.uncertain) return '请求结果未确认，命令可能已被接收。请先查看总览中的任务状态，避免重复下发。';
+  return explain(result && result.error);
+}
+
+// 只合并仍在等待的相同写请求，不自动重试；急停与暂停不会被其他命令阻塞。
+const writes = new Map();
+
 // 图片接口的错误正文也是 ArrayBuffer；只解析有界的 UTF-8 JSON 错误，不处理成功图片。
 function errorPayload(body) {
   if (!body || typeof body.byteLength !== 'number' || body.byteLength > 65536) return body;
@@ -69,8 +77,11 @@ function request(path, options) {
     if (token) header.Authorization = 'Bearer ' + token;
   }
   if (opts.method === 'POST') header['Content-Type'] = 'application/json';
-  return new Promise((resolve) => {
-    wx.request({
+  const isWrite = (opts.method || 'GET') !== 'GET';
+  const key = opts.dedupe ? JSON.stringify([url, opts.method, header.Authorization || '', opts.data]) : '';
+  if (key && writes.has(key)) return writes.get(key);
+  const pending = new Promise((resolve) => {
+    try { wx.request({
       url,
       method: opts.method || 'GET',
       data: opts.data,
@@ -86,15 +97,21 @@ function request(path, options) {
         }
         const payload = errorPayload(body);
         // 已知错误码使用统一中文提示，避免把后端文件路径等诊断细节展示给用户。
-        const detail = payload && typeof payload === 'object'
+        const detail = status === 401 ? 'unauthorized' : payload && typeof payload === 'object'
           ? (ERROR_TEXT[payload.error] ? payload.error : (payload.detail || payload.error)) : '';
-        resolve({ ok: false, status, data: body, error: (typeof detail === 'string' && detail) || ('http_' + status) });
+        resolve({ ok: false, status, data: body, error: (typeof detail === 'string' && detail) || ('http_' + status), uncertain: isWrite && status >= 500 });
       },
       fail(err) {
-        resolve({ ok: false, status: 0, data: null, error: (err && (err.errMsg || err.message)) || 'network_error' });
+        resolve({ ok: false, status: 0, data: null, error: (err && (err.errMsg || err.message)) || 'network_error', uncertain: isWrite });
       }
-    });
+    }); } catch (e) {
+      resolve({ ok: false, status: 0, data: null, error: 'network_error' });
+    }
   });
+  if (!key) return pending;
+  const tracked = pending.finally(() => { if (writes.get(key) === tracked) writes.delete(key); });
+  writes.set(key, tracked);
+  return tracked;
 }
 
 function unwrap(result) {
@@ -116,6 +133,7 @@ function post(path, body, auth) {
     method: 'POST',
     data: Object.assign({ source: config.SOURCE, requested_by: 'wechat' }, body || {}),
     auth: auth || 'required',
+    dedupe: true,
     timeout: 12000
   });
 }
@@ -124,6 +142,7 @@ module.exports = {
   request,
   unwrap,
   explain,
+  failureText,
   getToken,
   setToken,
   getGatewayHealth,
@@ -141,6 +160,7 @@ module.exports = {
   smartCommand: (text) => request('/api/voice/smart_command', {
     method: 'POST',
     auth: 'required',
+    dedupe: true,
     timeout: 45000,
     data: { text, source: config.SOURCE + '-voice', requested_by: 'wechat', generate_tts: true }
   }),
@@ -148,6 +168,7 @@ module.exports = {
   confirmCommand: (id, confirmed) => request('/api/voice/confirm_command', {
     method: 'POST',
     auth: 'required',
+    dedupe: true,
     timeout: 12000,
     data: { pending_command_id: id, confirmed: !!confirmed, requested_by: 'wechat' }
   })

@@ -4,7 +4,7 @@ Component({
     show: { type: Boolean, value: false },
     kicker: { type: String, value: '运动任务确认' },
     title: { type: String, value: '' },
-    note: { type: String, value: '确认后任务交给 FPGA 导航执行，速度由 FPGA 安全限幅；随时可以按急停。' },
+    note: { type: String, value: '请在30秒内确认，离开页面需重新发起。任务由 RK3588 后端下发，执行状态请查看总览。' },
     rows: { type: Array, value: [] },
     confirmText: { type: String, value: '确认执行' },
     cancelText: { type: String, value: '取消' },

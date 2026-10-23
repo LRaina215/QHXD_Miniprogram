@@ -49,8 +49,8 @@ function sheetFor(command, body, store) {
 async function run(command, body) {
   const res = await api.mission(command, body || {});
   const data = api.unwrap(res);
-  if (res.ok && data) return { ok: data.accepted !== false, detail: data.detail || '已发送' };
-  return { ok: false, detail: api.explain(res.error) };
+  if (res.ok && data && res.data.success !== false && typeof data.accepted === 'boolean') return { ok: data.accepted, detail: data.detail || (data.accepted ? '已发送' : '任务未受理') };
+  return { ok: false, uncertain: !!res.uncertain || res.ok, detail: api.failureText(res.ok ? { uncertain: true } : res) };
 }
 
 module.exports = { isMotion, sheetFor, run };

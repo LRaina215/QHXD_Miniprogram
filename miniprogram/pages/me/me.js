@@ -2,6 +2,7 @@ const api = require('../../utils/api');
 const config = require('../../utils/config');
 const store = require('../../utils/store');
 const L = require('../../utils/labels');
+const confirmation = require('../../utils/confirmation');
 
 Page({
   data: {
@@ -17,6 +18,7 @@ Page({
   },
 
   onShow() {
+    confirmation.show(this);
     this.offs = [
       store.on('conn', () => this.render()),
       store.on('state', () => this.render()),
@@ -29,6 +31,7 @@ Page({
   },
 
   onHide() {
+    this._confirmationHidden = true;
     (this.offs || []).forEach((off) => off());
     this.offs = [];
   },
@@ -100,17 +103,22 @@ Page({
 
   async onMode(e) {
     const mode = e.currentTarget.dataset.mode;
-    if (mode === this.data.mode) return;
+    if (this._confirmationHidden || mode === this.data.mode || this.modeRequest || (mode !== 'mock' && mode !== 'real')) return;
+    const visit = confirmation.capture(this);
+    this.modeRequest = visit;
     wx.showLoading({ title: '切换中', mask: true });
-    const res = await api.switchMode(mode);
-    wx.hideLoading();
+    let res;
+    try { res = await api.switchMode(mode); }
+    finally { this.modeRequest = null; wx.hideLoading(); }
+    if (!confirmation.current(this, visit)) return;
     const data = api.unwrap(res);
-    if (res.ok && data) {
+    if (res.ok && data && res.data.success !== false && data.accepted === true) {
       wx.showToast({ title: mode === 'real' ? '已切到实车模式' : '已切到模拟模式', icon: 'success' });
       store.trail = [];
       store.refresh();
     } else {
-      wx.showModal({ title: '切换失败', content: api.explain(res.error), showCancel: false });
+      wx.showModal({ title: res.uncertain ? '切换结果未确认' : '切换失败', content: (data && data.detail) || api.failureText(res.ok ? { uncertain: true } : res), showCancel: false });
+      store.refresh();
     }
   },
 

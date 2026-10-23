@@ -76,6 +76,8 @@ tests/                           本地模拟测试（不打包进小程序）
 
 运动类指令还要求网关开启公网控制（`PUBLIC_CONTROL_ENABLED`）。网关返回的拒绝原因会直接显示给用户。
 
+确认面板的本地有效窗口为 30 秒，离开页面或更换服务地址 / Token 后需重新发起；后端仍独立校验语音命令是否过期。相同的未完成写请求会合并，超时或断网后不会自动重试，也不会将“未收到结果”说成“未执行”；应先在总览核对实际任务状态。已发送的命令不会因切页而撤回。
+
 依赖新版 Cloud Gateway（QHXD_Web `yuntuo-fpga` 分支）的两处：
 - `/api/gateway/health`：主域名只转发 `/api/`，网关健康要从这里取；旧网关上会回退到 `/health`，「公网运动控制」显示为未知。
 - `/api/platform/estop`：旧网关白名单没有它，急停会回退为取消当前任务。
@@ -89,6 +91,7 @@ node tests/static-check.js           # JSON、页面文件、WXML 配对、事�
 node tests/live-safety.js            # 公网测试的失败收尾保护；纯本地模拟，不连接设备
 node tests/store-lifecycle.js        # 服务器切换、迟到响应与离线状态；纯本地模拟
 node tests/camera.js                 # 图片错误解析、过期提示与相机轮询隔离；纯本地模拟
+node tests/command-errors.js         # 鉴权、超时、防重复、确认过期与页面离开；20 组纯本地检查
 node tests/smoke.js [地址]             # 只读冒烟，默认 https://lingxunrobot.cn，可随时对线上跑
 node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对本机模拟链路跑
 YUNTUO_TOKEN=... node tests/live.js  # 公网控制链路：板载大模型助手、确认 / 取消、暂停继续、急停；仅 FPGA 为 mock 且空闲时运行

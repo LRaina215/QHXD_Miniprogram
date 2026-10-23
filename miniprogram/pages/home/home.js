@@ -3,6 +3,7 @@ const actions = require('../../utils/actions');
 const fieldMap = require('../../utils/fieldMap');
 const api = require('../../utils/api');
 const config = require('../../utils/config');
+const confirmation = require('../../utils/confirmation');
 
 const store = require('../../utils/store');
 
@@ -40,6 +41,7 @@ Page({
   },
 
   onShow() {
+    confirmation.show(this);
     this.offs = [
       store.on('state', () => this.renderState()),
       store.on('nav', () => { this.renderHud(); this.drawField(); }),
@@ -55,6 +57,7 @@ Page({
   },
 
   onHide() {
+    confirmation.leave(this);
     (this.offs || []).forEach((off) => off());
     this.offs = [];
     clearInterval(this.anim);
@@ -217,11 +220,18 @@ Page({
 
   /* ---------- 任务操作 ---------- */
   async quick(command) {
-    wx.showLoading({ title: '发送中', mask: true });
-    const r = await actions.run(command, {});
-    wx.hideLoading();
-    wx.showToast({ title: r.detail, icon: r.ok ? 'success' : 'none', duration: 2500 });
-    store.refresh();
+    if (this._confirmationHidden) return;
+    this.quickRequests = this.quickRequests || {};
+    if (this.quickRequests[command]) return;
+    const visit = confirmation.capture(this);
+    this.quickRequests[command] = visit;
+    try {
+      const r = await actions.run(command, {});
+      if (confirmation.current(this, visit)) wx.showToast({ title: r.detail, icon: r.ok ? 'success' : 'none', duration: 3500 });
+    } finally {
+      delete this.quickRequests[command];
+      store.refresh();
+    }
   },
 
   onPause() { if (this.data.hero.canPause) this.quick('pause'); },
@@ -231,28 +241,23 @@ Page({
 
   ask(command, body) {
     const s = actions.sheetFor(command, body, store);
-    this.pending = { command, body };
-    this.setData({ sheet: { show: true, title: s.title, rows: s.rows, loading: false, error: '' } });
+    confirmation.open(this, { command, body, taskId: store.task() && store.task().task_id }, s);
   },
 
   async onSheetConfirm() {
-    const p = this.pending;
-    if (!p) return;
-    this.setData({ 'sheet.loading': true, 'sheet.error': '' });
-    const r = await actions.run(p.command, p.body);
-    if (r.ok) {
-      this.pending = null;
-      this.setData({ sheet: { show: false, title: '', rows: [], loading: false, error: '' } });
-      wx.showToast({ title: r.detail, icon: 'none', duration: 2500 });
-      store.refresh();
-    } else {
-      this.setData({ 'sheet.loading': false, 'sheet.error': r.detail });
-    }
+    const r = await confirmation.run(this, (p) => {
+      if (p.command === 'resume' && (!store.task() || store.task().task_id !== p.taskId)) return { ok: false, detail: '任务已变化，请重新确认' };
+      if (p.command !== 'resume' && store.taskActive()) return { ok: false, detail: '已有任务在执行，请先查看当前任务' };
+      return actions.run(p.command, p.body);
+    });
+    if (!r) return;
+    if (r.ok) wx.showToast({ title: r.detail, icon: 'none', duration: 2500 });
+    else wx.showModal({ title: r.uncertain ? '执行结果未确认' : '任务未受理', content: r.detail, showCancel: false });
+    store.refresh();
   },
 
   onSheetCancel() {
-    this.pending = null;
-    this.setData({ 'sheet.show': false });
+    if (!this._confirmationRequest) confirmation.close(this);
   },
 
   onAllEvents() {

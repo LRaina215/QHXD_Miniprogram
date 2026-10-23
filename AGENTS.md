@@ -23,6 +23,7 @@
 
 - 数据订阅统一使用 `utils/store.js`，隐藏或卸载页面时取消订阅。
 - 运动命令保留确认流程；急停立即发送，解除急停需确认。
+- 确认状态统一使用 `utils/confirmation.js`，本地窗口 30 秒，隐藏页面时失效；请求发出后切页不代表撤回。写请求结果未知时不得自动重试或宣称未执行。相关定向回归为 `node tests/command-errors.js`，纯本地模拟，不发设备控制。
 - 展示标签集中在 `utils/labels.js`、`utils/view.js`，沿用现有四个页面与设计约定。
 - 根据变更选择验证。`node tests/static-check.js` 检查页面与资源；`node tests/smoke.js` 对公网只读检查；`node tests/live-safety.js` 在本地检查公网测试失败路径。
 - 数据层请求必须归属于发起时的连接；切换地址或停止连接后，不允许迟到的状态、事件、航点或地图写回。相关回归为 `node tests/store-lifecycle.js`，仅本地模拟。
