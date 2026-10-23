@@ -99,7 +99,7 @@ Page({
     let banner = '';
     let tone = 'off';
     if (c.gateway === 'offline' && !store.lastStateAt) {
-      banner = '连不上云端（' + config.baseUrl() + '），请检查网络或服务器';
+      banner = c.error ? c.error + '（' + config.baseUrl() + '）' : '连不上云端（' + config.baseUrl() + '），请检查网络或服务器';
       tone = 'bad';
     } else if (!c.rk) {
       banner = store.lastStateAt ? 'RK3588 已离线，下面是最后一次收到的数据' : '正在连接云拓…' + (c.error ? '（' + c.error + '）' : '');

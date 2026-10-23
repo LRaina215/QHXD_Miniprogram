@@ -30,4 +30,5 @@
 - 相机轮询也要绑定页面 / 服务地址，避免请求重叠和离开页面后的图片写回。过期画面要明确标记，不能把 `latest_frame_stale` 说成感知节点未运行；相关回归为 `node tests/camera.js`。
 - `tests/e2e.js`、`tests/live.js` 会下发控制命令，不能作为普通接手检查直接运行。公网运动测试需确认本次测试范围、两侧链路均为 mock，且当前没有任务和急停；前置检查失败时不得以收尾名义取消任务或解除急停。
 - Node 模拟与 HTML 预览不等于微信开发者工具编译、真机语音或真实 FPGA 验收。报告中写清实际完成的验证。
+- 发布网络入口使用后台已登记的 `api.lingxunrobot.cn`。改默认地址前应核对该 AppID 刷新后的 request / socket / downloadFile 列表；不能凭本机 `urlCheck=false` 的连通性认定发布可用。域名与旧地址兼容检查为 `node tests/release-network.js`。
 - 维护完成后在 `MAINTENANCE.md` 更新结论、未解决项和必要验证，保持后续交接可继续。

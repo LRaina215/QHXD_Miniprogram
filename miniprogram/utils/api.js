@@ -41,6 +41,8 @@ function explain(error) {
   const code = String(error);
   if (code.indexOf('robot_fault:') === 0) return '机器人存在故障：' + code.slice(12);
   if (code.indexOf('rk_forward_failed') === 0) return 'RK3588 后端暂时连不上';
+  if (/not in domain list|不在.*合法域名|domain.*not.*allowed/i.test(code)) return '连接域名未登记为微信小程序合法域名，请核对微信后台的服务器域名';
+  if (/ssl|tls|certificate/i.test(code)) return 'HTTPS 证书或 TLS 校验失败，请检查服务器证书与手机系统时间';
   if (/timeout/i.test(code)) return ERROR_TEXT.request_timeout;
   if (/request:fail/i.test(code)) return ERROR_TEXT.network_error;
   return ERROR_TEXT[code] || code;

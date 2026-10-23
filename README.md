@@ -6,7 +6,7 @@
 当前接手状态、验证范围与遗留事项见 [MAINTENANCE.md](MAINTENANCE.md)；后续开发约定见 [AGENTS.md](AGENTS.md)。
 
 ```text
-微信小程序 ──HTTPS / WSS──> lingxunrobot.cn（nginx：/api/ 与 /ws/）
+微信小程序 ──HTTPS / WSS──> api.lingxunrobot.cn（/api/ 与 /ws/）
           ──> Cloud Gateway ──> RK3588 FastAPI
 
 仅执行导航 / 控制任务时，后端继续下发：
@@ -24,17 +24,19 @@ RK3588 FastAPI ──> fpga_bridge ──> FPGA（当前未接板时使用 mock�
 
    | 类型 | 域名 |
    | --- | --- |
-   | request | `https://lingxunrobot.cn` |
-   | socket | `wss://lingxunrobot.cn` |
-   | downloadFile | `https://lingxunrobot.cn` |
+   | request | `https://api.lingxunrobot.cn` |
+   | socket | `wss://api.lingxunrobot.cn` |
+   | downloadFile | `https://api.lingxunrobot.cn` |
 
-   统一用主域名，不再配 `api.lingxunrobot.cn`：只维护一个合法域名和一张证书（主域名证书 2026-12-27 到期）。
+   本项目 AppID 为 `wx1f68b56b794572da`。2026-10-23 刷新核对后台已登记的是上述 API 子域名；网站主域名 `lingxunrobot.cn` 未登记，不能直接供正式小程序请求。开发者工具关闭校验不会替正式版登记域名，发布前应核对实际登记值。
 3. 编译运行。总览、地图、相机、事件这些只读内容不需要 Token。
 4. 助手对话、下发任务、急停都是 POST，网关要求 Token：在「我的 → 访问 Token」里填入公网 Token
    （与 Cloud Gateway 的 `PUBLIC_API_TOKEN` 一致）。Token 只存在本机缓存，不要写进代码或文档。
 
 调试时可在「我的 → 调试」把服务地址改成局域网 RK3588（如 `http://192.168.x.x:8000`），
-需要在开发者工具里勾选「不校验合法域名」。清空即恢复 `https://lingxunrobot.cn`。
+开发者工具中联调局域网地址时按需配置；清空即恢复 `https://api.lingxunrobot.cn`。旧版缓存的公网主域名会兼容映射到 API 子域名，自定义局域网地址保留。
+
+已安装的旧手机版本若仍请求 `https://lingxunrobot.cn`，可先在「我的 → 调试」填写 `https://api.lingxunrobot.cn` 并点击「应用地址」，使用已经登记的接口域名；此入口不需要等待新代码包发布。修改后回总览复测，不能以电脑连通代替手机结果。
 
 ## 页面
 
@@ -92,7 +94,8 @@ node tests/live-safety.js            # 公网测试的失败收尾保护；纯�
 node tests/store-lifecycle.js        # 服务器切换、迟到响应与离线状态；纯本地模拟
 node tests/camera.js                 # 图片错误解析、过期提示与相机轮询隔离；纯本地模拟
 node tests/command-errors.js         # 鉴权、超时、防重复、确认过期与页面离开；20 组纯本地检查
-node tests/smoke.js [地址]             # 只读冒烟，默认 https://lingxunrobot.cn，可随时对线上跑
+node tests/release-network.js         # 默认域名、旧缓存兼容及连接错误显示；纯本地
+node tests/smoke.js [地址]             # 只读冒烟，默认 api.lingxunrobot.cn
 node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对本机模拟链路跑
 YUNTUO_TOKEN=... node tests/live.js  # 公网控制链路：板载大模型助手、确认 / 取消、暂停继续、急停；仅 FPGA 为 mock 且空闲时运行
 node tests/preview/render.js         # 生成 tests/preview/out/*.html 版式预览

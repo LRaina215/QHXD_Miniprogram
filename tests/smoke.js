@@ -1,11 +1,11 @@
 /**
- * 只读冒烟（node tests/smoke.js [地址]，默认 https://lingxunrobot.cn）：用真实数据层连一遍公网，
+ * 只读冒烟（node tests/smoke.js [地址]，默认读取小程序配置）：用真实数据层连一遍公网，
  * 检查小程序用到的每个读接口、两条 WebSocket、页面渲染，并标出后端缺哪些云拓字段。
  * 不发任何 POST，不需要 Token，可以随时对线上跑。
  */
 const { storage, mount, startApp } = require('./wx-sim');
 
-const BASE = process.argv[2] || 'https://lingxunrobot.cn';
+const BASE = process.argv[2] || require('../miniprogram/utils/config').DEFAULT_BASE_URL;
 storage.set('yuntuo_base_url', BASE);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
