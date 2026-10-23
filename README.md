@@ -24,11 +24,11 @@ RK3588 FastAPI ──> fpga_bridge ──> FPGA（当前未接板时使用 mock�
 
    | 类型 | 域名 |
    | --- | --- |
-   | request | `https://api.lingxunrobot.cn` |
-   | socket | `wss://api.lingxunrobot.cn` |
-   | downloadFile | `https://api.lingxunrobot.cn` |
+   | request | `https://api.lingxunrobot.cn`、`https://lingxunrobot.cn` |
+   | socket | `wss://api.lingxunrobot.cn`、`wss://lingxunrobot.cn` |
+   | downloadFile | `https://api.lingxunrobot.cn`、`https://lingxunrobot.cn` |
 
-   本项目 AppID 为 `wx1f68b56b794572da`。2026-10-23 刷新核对后台已登记的是上述 API 子域名；网站主域名 `lingxunrobot.cn` 未登记，不能直接供正式小程序请求。开发者工具关闭校验不会替正式版登记域名，发布前应核对实际登记值。
+   本项目 AppID 为 `wx1f68b56b794572da`。2026-10-23 用户补登记网站主域名后，开发者工具刷新已确认上述三项均保留两个域名。默认继续使用 API 子域名，旧发布包使用的主域名也已有登记。开发者工具关闭校验不会替正式版登记域名，发布前应核对实际登记值。
 3. 编译运行。总览、地图、相机、事件这些只读内容不需要 Token。
 4. 助手对话、下发任务、急停都是 POST，网关要求 Token：在「我的 → 访问 Token」里填入公网 Token
    （与 Cloud Gateway 的 `PUBLIC_API_TOKEN` 一致）。Token 只存在本机缓存，不要写进代码或文档。
