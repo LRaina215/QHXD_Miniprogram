@@ -320,4 +320,6 @@ Zcode 来源为只读会话数据库中的 `sess_c6a3bb04-b08b-4b24-9eec-3a7234b
 
 恢复使用原小程序方法、默认 `api.lingxunrobot.cn` 和本机原 Token 后，实际公网视频已播放：`mode=video`、播放器 1、图片轮询停止，确认使用同一 API 域名且不是本机回环地址。界面显示连续视频、检测画面、HUD 与急停入口；本机截图 `tests/preview/out/video-check-20261025/production-video.jpg` 被 Git 忽略，含真实相机画面，不作为公开演示资料。
 
+另只读核对实际 MediaMTX 默认与 `robot/front` 配置，两处 `maxReaders=0`，流 ready，读到 3 个并存 HLS 会话；没有单观看端限制，不会因小程序新增观看而占掉 Web 的唯一位置。云出口带宽仍共享，这不等于无额外消耗，也不代替 Web 与手机同时播放的真机验收。验收结束切回地图，释放本次开发者工具播放器。
+
 尚未上传 / 发布小程序，也未完成手机真实播放、手机前后台、手机与 Web 同时观看或端到端视频延迟验收。没有重复已通过的控制、模型、音响、麦克风和 FPGA 测试。网关契约、部署与回退说明见 `../QHXD_Web/cloud_gateway/MINIPROGRAM_VIDEO.md`。
