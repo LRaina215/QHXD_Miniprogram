@@ -65,7 +65,8 @@ units.forEach(({ rel, kind }) => {
   while ((m = re.exec(wxml))) {
     if (typeof methods[m[2]] !== 'function') problems.push(rel + '.wxml: ' + m[1] + ' 绑定的方法 ' + m[2] + ' 不存在');
   }
-  const srcRe = /src="([^"]+)"/g;
+  // Only image resources: a video src is a runtime media URL, not a package asset.
+  const srcRe = /<image\b[^>]*?\bsrc="([^"]+)"/g;
   while ((m = srcRe.exec(wxml))) {
     const src = m[1];
     if (src.indexOf('{{') < 0) {

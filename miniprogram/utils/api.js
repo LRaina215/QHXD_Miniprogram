@@ -156,6 +156,7 @@ module.exports = {
   getTaskEvents: (limit) => request('/api/tasks/events?limit=' + (limit || 30)),
   getAlerts: () => request('/api/alerts'),
   getLatestFrame: () => request('/api/perception/latest_frame?t=' + Date.now(), { responseType: 'arraybuffer', timeout: 6000 }),
+  createVideoSession: () => request('/api/video/miniprogram/session', { method: 'POST', auth: 'required', timeout: 10000 }),
   mission: (command, body) => post('/api/mission/' + command, body),
   estop: (engage) => post('/api/platform/estop', { engage: !!engage }),
   switchMode: (mode) => post('/api/system/mode/switch', { mode }),

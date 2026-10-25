@@ -4,6 +4,7 @@ const fieldMap = require('../../utils/fieldMap');
 const api = require('../../utils/api');
 const config = require('../../utils/config');
 const confirmation = require('../../utils/confirmation');
+const CameraVideo = require('../../utils/cameraVideo');
 
 const store = require('../../utils/store');
 
@@ -25,6 +26,8 @@ Page({
     frameSrc: '',
     frameMsg: '正在获取相机画面…',
     frameStale: false,
+    video: { src: '', ticket: 0, mode: 'image', hint: '检测图片' },
+    videoPlayers: [],
     sheet: { show: false, title: '', rows: [], loading: false, error: '' }
   },
 
@@ -53,7 +56,7 @@ Page({
     this.renderAll();
     if (this.data.stageView === 'map') this.initCanvas();
     this.anim = setInterval(() => { if (store.nav && store.nav.target) this.drawField(); }, 90);
-    if (this.data.stageView === 'cam') this.startFrames();
+    if (this.data.stageView === 'cam') this.startCamera();
   },
 
   onHide() {
@@ -61,7 +64,7 @@ Page({
     (this.offs || []).forEach((off) => off());
     this.offs = [];
     clearInterval(this.anim);
-    this.stopFrames();
+    this.stopCamera();
   },
 
   onUnload() {
@@ -171,15 +174,49 @@ Page({
     this.setData({ stageView: v }, () => {
       if (v === 'cam') {
         this.canvas = this.ctx = this.size = this.raster = null;
-        this.startFrames();
+        this.startCamera();
       } else {
-        this.stopFrames();
+        this.stopCamera();
         this.initCanvas();
       }
     });
   },
 
-  /* ---------- 相机画面（最新检测帧，2 s 刷新） ---------- */
+  /* ---------- 连续视频与检测图片回退 ---------- */
+  startCamera() {
+    this.cameraActive = true;
+    if (!this.cameraVideo) this.cameraVideo = new CameraVideo((video) => {
+      const wasVideo = this.data.video.mode === 'video';
+      this.setData({ video, videoPlayers: video.src ? [{ src: video.src, ticket: video.ticket }] : [] });
+      if (!this.cameraActive) return;
+      if (video.mode === 'video') this.stopFrames();
+      else if (!this.frameTimer) {
+        if (wasVideo && this.data.frameSrc) this.setData({ frameStale: true, frameMsg: '正在更新检测图片…' });
+        this.startFrames();
+      }
+    });
+    this.cameraVideo.start();
+  },
+
+  stopCamera() {
+    this.cameraActive = false;
+    if (this.cameraVideo) this.cameraVideo.stop();
+    this.stopFrames();
+  },
+
+  onCameraProgress(e) {
+    if (this.cameraVideo) this.cameraVideo.progress(e.currentTarget.dataset.ticket, Number(e.detail.currentTime));
+  },
+
+  onCameraError(e) {
+    if (this.cameraVideo) this.cameraVideo.failed(e.currentTarget.dataset.ticket);
+  },
+
+  onRetryVideo() {
+    if (this.cameraVideo) this.cameraVideo.retry();
+  },
+
+  /* 最新检测图片：连接视频期间或播放失败时，2 s 刷新。 */
   startFrames() {
     this.stopFrames();
     const session = this.frameSession;
