@@ -44,6 +44,7 @@ class CameraVideo {
     const ticket = this.ticket;
     this.retryAt = 0;
     this.lastPosition = -1;
+    this.playSeen = false;
     if (!api.getToken()) {
       this.publish({ src: '', mode: 'image', hint: '设置 Token 后可看连续视频' });
       return;
@@ -73,12 +74,41 @@ class CameraVideo {
       return;
     }
     this.renewAt = started + ttl - Math.min(30000, ttl * 0.2);
-    this.deadline = Date.now() + 15000;
-    this.publish({ src: config.buildUrl(path), mode: 'connecting', hint: '正在连接视频 · 暂显示检测图片' });
+    this.deadline = Date.now() + 30000;
+    this.publish({ src: config.buildUrl(path), mode: 'connecting', hint: '正在加载视频 · 可点播放' });
+  }
+
+  metadata(ticket) {
+    if (this.current(Number(ticket)) && this.state.src && this.state.mode === 'connecting' && !this.playSeen) {
+      this.publish({ hint: '视频已加载 · 可点播放' });
+    }
+  }
+
+  playing(ticket) {
+    if (!this.current(Number(ticket)) || !this.state.src) return;
+    this.playSeen = true;
+    // play / metadata alone do not confirm advancing frames.
+    if (this.state.mode === 'connecting') this.publish({ hint: '视频已启动 · 正在缓冲' });
+  }
+
+  waiting(ticket) {
+    if (!this.current(Number(ticket)) || !this.state.src) return;
+    if (this.state.mode === 'video') this.deadline = Date.now() + 15000;
+    this.publish({ mode: 'connecting', hint: '视频缓冲中 · 可点播放' });
+  }
+
+  requestPlay(ticket) {
+    if (!this.current(Number(ticket)) || !this.state.src) return false;
+    this.deadline = Date.now() + 30000;
+    this.publish({ hint: '正在启动视频…' });
+    return true;
   }
 
   progress(ticket, position) {
-    if (!this.current(Number(ticket)) || !this.state.src || !Number.isFinite(position) || position <= 0) return;
+    // Native players may report 0 on the first timeupdate. Duplicate timestamps
+    // still cannot keep a stalled stream alive indefinitely.
+    if (!this.current(Number(ticket)) || !this.state.src || !Number.isFinite(position) || position < 0
+      || (position === 0 && !this.playSeen)) return;
     if (position === this.lastPosition) return;
     this.lastPosition = position;
     this.lastProgress = Date.now();
@@ -86,8 +116,17 @@ class CameraVideo {
     if (this.state.mode !== 'video') this.publish({ mode: 'video', hint: '连续视频' });
   }
 
-  failed(ticket) {
-    if (this.current(Number(ticket)) && this.state.src) this.fallback('视频已断开 · 显示检测图片');
+  failed(ticket, code, message) {
+    if (!this.current(Number(ticket)) || !this.state.src) return;
+    // The DevTools HLS adapter also emits error for recoverable buffer events.
+    // Preserve its player while it recovers; waiting() keeps a bounded deadline.
+    if (typeof message === 'string' && /\b(bufferStalledError|bufferAppendError|bufferSeekOverHole|bufferNudgeOnStall)\b/.test(message)) {
+      this.waiting(ticket);
+      return;
+    }
+    // Native errMsg can contain the signed media URL; expose numeric codes only.
+    const detail = /^-?\d{1,10}$/.test(String(code)) ? '（错误码 ' + code + '）' : '';
+    this.fallback('视频播放失败' + detail + ' · 显示检测图片');
   }
 
   fallback(hint, noRetry) {

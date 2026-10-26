@@ -63,15 +63,17 @@
       <canvas wx:if="{{stageView === 'map'}}" type="2d" id="field" class="field-canvas"></canvas>
       <view wx:if="{{stageView === 'cam'}}" class="cam">
         <video wx:for="{{videoPlayers}}" wx:key="ticket" id="camera-video-{{item.ticket}}"
-          class="camera-video {{video.mode === 'video' ? 'playing' : ''}}" src="{{item.src}}" data-ticket="{{item.ticket}}"
+          class="camera-video" src="{{item.src}}" poster="{{frameSrc}}" data-ticket="{{item.ticket}}"
           autoplay="{{true}}" muted="{{true}}" controls="{{false}}" object-fit="contain"
-          show-center-play-btn="{{false}}" show-play-btn="{{false}}" enable-progress-gesture="{{false}}"
+          show-center-play-btn="{{video.mode !== 'video'}}" show-play-btn="{{false}}" enable-progress-gesture="{{false}}"
+          bindloadedmetadata="onCameraMetadata" bindplay="onCameraPlay" bindwaiting="onCameraWaiting"
           bindtimeupdate="onCameraProgress" binderror="onCameraError" bindended="onCameraError"></video>
-        <image wx:if="{{frameSrc && video.mode !== 'video'}}" class="frame" src="{{frameSrc}}" mode="aspectFit" bindtap="onPreviewFrame"></image>
-        <view wx:if="{{!frameSrc && video.mode !== 'video'}}" class="cam-empty">{{frameMsg}}</view>
+        <image wx:if="{{frameSrc && !video.src}}" class="frame" src="{{frameSrc}}" mode="aspectFit" bindtap="onPreviewFrame"></image>
+        <view wx:if="{{!frameSrc && !video.src}}" class="cam-empty">{{frameMsg}}</view>
         <view wx:if="{{frameSrc && frameStale && video.mode !== 'video'}}" class="cam-stale">最后一帧 · {{frameMsg}}</view>
         <view class="cam-status">
           <text>{{video.hint}}</text>
+          <text wx:if="{{video.src && video.mode !== 'video'}}" class="cam-retry" bindtap="onPlayVideo">播放视频</text>
           <text wx:if="{{video.mode === 'image'}}" class="cam-retry" bindtap="onRetryVideo">重试视频</text>
         </view>
       </view>

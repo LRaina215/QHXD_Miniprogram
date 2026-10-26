@@ -17,13 +17,13 @@ RK3588 FastAPI ──> fpga_bridge ──> FPGA（当前未接板时使用 mock�
 
 小程序的按住说话使用当前手机（开发者工具中为电脑）的麦克风，经 WechatSI 识别后向 RK3588 发送文字。接在 RK3588 上的车载麦克风走独立的板载录音 / 识别接口；两者需分别验收。Web / RK3588 会话后续已报告 USB 音响接入与播报通过；这是该会话的交付记录，不代表本小程序已完成手机录音或手机到车载播报的验收。
 
-### 与 Web 端的视频差距（2026-10-25）
+### 与 Web 端的视频差距（2026-10-26）
 
-状态数据已与 Web 一样使用 WebSocket 推送，断线时由 REST 兜底。当前源码新增 HLS 连续视频：有 Token 时请求限时播放地址，使用微信 `<video>` 播放；连接期间、未配置 Token 或播放失败时，每 2 秒请求一张检测图片。新网关接口已部署，开发者工具已通过实际公网播放；手机旧代码包尚未更新。
+状态数据已与 Web 一样使用 WebSocket 推送，断线时由 REST 兜底。当前源码使用 HLS 连续视频：有 Token 时请求限时播放地址，使用微信 `<video>` 播放；连接期间、未配置 Token 或播放失败时，每 2 秒请求一张检测图片。新网关接口已部署，开发者工具已通过实际公网播放。针对手机一直显示连接中的问题，已补手动播放、原生启动事件及缓冲恢复处理；本轮修复尚未上传微信代码包，手机兼容仍待验证。
 
 Web 的 `CloudVideoPlayer.vue` 使用 WebRTC / WHEP，代码保留 HLS 和检测图片流回退。小程序复用同一云端 MediaMTX 视频源，通过 HLS 播放；不是照搬浏览器 WebRTC。视频由 RK3588 推到云端，不经过 FPGA；两个观看端各建连接，不需要再开相机或重复编码，会增加云端出口流量。HLS 延迟和手机兼容仍需单独验收。
 
-旧 `/video/hls/` 公网路径返回 `404 / not_in_public_whitelist`。本次配套网关新增并部署 `/api/video/miniprogram/session`，用原 Bearer Token 换取同一 API 域名下的限时 HLS 地址，清单和分片逐次校验，不依赖微信与浏览器共享 Cookie，也不把长期 Token 交给播放器。已验证默认 API 域名下的实际公网视频播放；手机正式版尚未上传更新，不能将开发者工具结果写成手机验收。具体依据、分工和待办见 [维护记录](MAINTENANCE.md)。
+旧 `/video/hls/` 公网路径返回 `404 / not_in_public_whitelist`。配套网关已部署 `/api/video/miniprogram/session`，用原 Bearer Token 换取同一 API 域名下的限时 HLS 地址，清单和分片逐次校验，不依赖微信与浏览器共享 Cookie，也不把长期 Token 交给播放器。10 月 26 日服务器日志已有 Android 客户端成功读取清单和分片的记录，不支持把连接中提示直接归为缺少域名；具体手机播放错误仍需取得该终端证据。开发者工具结果不代替手机验收，具体依据、分工和待办见 [维护记录](MAINTENANCE.md)。
 
 ## 快速开始
 
@@ -37,7 +37,7 @@ Web 的 `CloudVideoPlayer.vue` 使用 WebRTC / WHEP，代码保留 HLS 和检测
    | downloadFile | `https://api.lingxunrobot.cn`、`https://lingxunrobot.cn` |
 
    本项目 AppID 为 `wx1f68b56b794572da`。2026-10-23 用户补登记网站主域名后，开发者工具刷新已确认上述三项均保留两个域名。默认继续使用 API 子域名，旧发布包使用的主域名也已有登记。开发者工具关闭校验不会替正式版登记域名，发布前应核对实际登记值。
-3. 编译运行。总览、地图、相机、事件这些只读内容不需要 Token。
+3. 编译运行。总览、地图、相机检测图片、事件这些只读内容不需要 Token；连续视频需要 Token 换取播放地址。
 4. 助手对话、下发任务、急停都是 POST，网关要求 Token：在「我的 → 访问 Token」里填入公网 Token
    （与 Cloud Gateway 的 `PUBLIC_API_TOKEN` 一致）。Token 只存在本机缓存，不要写进代码或文档。
 
@@ -102,7 +102,7 @@ node tests/static-check.js           # JSON、页面文件、WXML 配对、事�
 node tests/live-safety.js            # 公网测试的失败收尾保护；纯本地模拟，不连接设备
 node tests/store-lifecycle.js        # 服务器切换、迟到响应与离线状态；纯本地模拟
 node tests/camera.js                 # 图片错误解析、过期提示与相机轮询隔离；纯本地模拟
-node tests/camera-video.js           # 连续视频、续期、卡帧回退与切页隔离；8 组纯本地
+node tests/camera-video.js           # 连续视频、手机启动事件、缓冲恢复与切页隔离；9 组纯本地
 node tests/command-errors.js         # 鉴权、超时、防重复、确认过期与页面离开；20 组纯本地检查
 node tests/release-network.js         # 默认域名、旧缓存兼容及连接错误显示；纯本地
 node tests/smoke.js [地址]             # 只读冒烟，默认 api.lingxunrobot.cn

@@ -187,7 +187,12 @@ Page({
     this.cameraActive = true;
     if (!this.cameraVideo) this.cameraVideo = new CameraVideo((video) => {
       const wasVideo = this.data.video.mode === 'video';
-      this.setData({ video, videoPlayers: video.src ? [{ src: video.src, ticket: video.ticket }] : [] });
+      const patch = { video };
+      const player = this.data.videoPlayers[0];
+      if (video.src ? !player || player.src !== video.src || player.ticket !== video.ticket : !!player) {
+        patch.videoPlayers = video.src ? [{ src: video.src, ticket: video.ticket }] : [];
+      }
+      this.setData(patch);
       if (!this.cameraActive) return;
       if (video.mode === 'video') this.stopFrames();
       else if (!this.frameTimer) {
@@ -208,8 +213,28 @@ Page({
     if (this.cameraVideo) this.cameraVideo.progress(e.currentTarget.dataset.ticket, Number(e.detail.currentTime));
   },
 
+  onCameraMetadata(e) {
+    if (this.cameraVideo) this.cameraVideo.metadata(e.currentTarget.dataset.ticket);
+  },
+
+  onCameraPlay(e) {
+    if (this.cameraVideo) this.cameraVideo.playing(e.currentTarget.dataset.ticket);
+  },
+
+  onCameraWaiting(e) {
+    if (this.cameraVideo) this.cameraVideo.waiting(e.currentTarget.dataset.ticket);
+  },
+
   onCameraError(e) {
-    if (this.cameraVideo) this.cameraVideo.failed(e.currentTarget.dataset.ticket);
+    const detail = e.detail || {};
+    if (this.cameraVideo) this.cameraVideo.failed(e.currentTarget.dataset.ticket,
+      detail.errCode === undefined ? detail.errno : detail.errCode, detail.errMsg);
+  },
+
+  onPlayVideo() {
+    const ticket = this.data.video.ticket;
+    if (!this.cameraVideo || !this.cameraVideo.requestPlay(ticket)) return;
+    wx.createVideoContext('camera-video-' + ticket, this).play();
   },
 
   onRetryVideo() {
