@@ -5,12 +5,16 @@
 
 当前接手状态、验证范围与遗留事项见 [MAINTENANCE.md](MAINTENANCE.md)；后续开发约定见 [AGENTS.md](AGENTS.md)。
 
+**2026-10-27系统对账：** 整体设计见[总体架构](https://github.com/LRaina215/SOC_FPGA_NAV/blob/codex/integration-g2-20261022/docs/system_architecture.md)。当前下游选择PNR61 / SLF128 / 双串口，RK现役Qwen3-1.7B、真实来源桥接和Web地图上传/预览已部署。22:01只读公网为网关/RK在线、real、任务idle，FPGA导航/遥测offline；最近板上收尾为hold，不以real标签推定真实运动可用。本轮仅文档，不改变连接配置、设备状态或微信发布。
+
+用户确认过基础真机验收；新增HLS/手机启动与缓冲修复在b8ed624，未取得新微信代码包发布及新版手机完整验收记录。源码中也尚未补齐`verifying_arrival`、`waiting_stop`、`stop_unconfirmed`三个phase的中文映射，可能回显英文阶段码；任务detail仍直接来自共享后端。小程序当前仅显示地图，没有Web新增的地图文件上传/隔离预览入口。
+
 ```text
 微信小程序 ──HTTPS / WSS──> api.lingxunrobot.cn（/api/ 与 /ws/）
           ──> Cloud Gateway ──> RK3588 FastAPI
 
 仅执行导航 / 控制任务时，后端继续下发：
-RK3588 FastAPI ──> fpga_bridge ──> FPGA（当前未接板时使用 mock）
+RK3588 FastAPI ──> fpga_bridge ──CH导航＋P11-40遥测──> FPGA
 ```
 
 小程序只通过网关访问 RK3588 后端接口，不直接连接 FPGA。助手解析、相机感知和业务接口由 RK3588 处理；FPGA 是运动任务的下游执行与反馈端。后端的“实车模式”也可以配合 mock FPGA 调试，不能据此判断已接真实板卡。
@@ -23,7 +27,7 @@ RK3588 FastAPI ──> fpga_bridge ──> FPGA（当前未接板时使用 mock�
 
 Web 的 `CloudVideoPlayer.vue` 使用 WebRTC / WHEP，代码保留 HLS 和检测图片流回退。小程序复用同一云端 MediaMTX 视频源，通过 HLS 播放；不是照搬浏览器 WebRTC。视频由 RK3588 推到云端，不经过 FPGA；两个观看端各建连接，不需要再开相机或重复编码，会增加云端出口流量。HLS 延迟和手机兼容仍需单独验收。
 
-旧 `/video/hls/` 公网路径返回 `404 / not_in_public_whitelist`。配套网关已部署 `/api/video/miniprogram/session`，用原 Bearer Token 换取同一 API 域名下的限时 HLS 地址，清单和分片逐次校验，不依赖微信与浏览器共享 Cookie，也不把长期 Token 交给播放器。10 月 26 日服务器日志已有 Android 客户端成功读取清单和分片的记录，不支持把连接中提示直接归为缺少域名；具体手机播放错误仍需取得该终端证据。开发者工具结果不代替手机验收，具体依据、分工和待办见 [维护记录](MAINTENANCE.md)。
+10月25日旧`/video/hls/`公网路径曾返回404；Web侧10月27日已补浏览器HLS代理，不能沿用旧结论判断当前全局视频。小程序仍使用已部署的`/api/video/miniprogram/session`，用原Bearer Token换同一API域名的限时HLS地址，逐次校验清单/分片，不依赖共享Cookie或把长期Token交给播放器。10月26日Android清单/分片200记录不支持直接归因为缺少域名，亦不证明每一终端已成功解码。新版手机结果仍待独立验收。
 
 ## 快速开始
 
@@ -55,7 +59,7 @@ Web 的 `CloudVideoPlayer.vue` 使用 WebRTC / WHEP，代码保留 HLS 和检测
 | 助手 | 按住说话（微信同声传译）或文字输入 → 智能助手；运动类指令弹出确认后才执行 |
 | 我的 | 连接诊断、控制令牌、模拟 / 实车模式切换、告警、调试地址 |
 
-全局组件：`estop-fab`（右下角急停，按下立即生效，解除需确认）、`confirm-sheet`（运动指令确认底板）。
+全局组件：`estop-fab`（右下角运行急停，按下立即请求停止导航目标并保留平衡，解除需确认）、`confirm-sheet`（运动指令确认底板）。接口受理不代表物理站稳，IR5锁存与hold镜像不是同一条停止路径。
 
 ## 代码结构
 

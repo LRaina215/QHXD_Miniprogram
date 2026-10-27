@@ -1,6 +1,26 @@
 # 云拓小程序维护记录
 
-## 当前结论（2026-10-25）
+## 当前结论（2026-10-27，跨仓库文档对账）
+
+本轮用户要求跟进全部进度、更新总体架构和相关文档并推送；只读取相关会话、源码及公网查询，不执行微信编译、手机控制测试、服务重启或FPGA操作。整车执行顺序仍只在导航总计划，本页不另立规划。
+
+| 依赖/功能 | 核对结果 |
+|---|---|
+| 整车候选 | 导航846767e所引用SYN49→PNR61，SLF128/128KiB/原4500/双串口，280/340块BSRAM且内部50/100MHz报告通过；同源PNR62仍124个setup违例；不包含SFP |
+| RK / Web | QHXD_Web31c679d记录已部署047c648功能，含6327c67桥接补齐；Qwen3-1.7B、真实来源任务层、地图上传和独立预览已上线。地图预览不等于FPGA READY或定位成功 |
+| 当前公网 | 22:01（北京时间）网关/RK在线、real、任务idle，导航与控制遥测offline；未在本会话重新读板，最近实板收尾为hold F322 |
+| 实物闭环 | 真串口最大地图/任务受理/失联/复位等专项与浸泡失败并存；USB软重启后25.537s仍缺序，落地站稳/制动和自主导航没有新接受记录 |
+| 小程序视频 | 本仓库b8ed624，HLS与原生启动/手动播放/缓冲恢复在开发者工具公网通过；10月26日Android媒体200保留，但没有取得新微信包发布和新版手机完整验收证据 |
+| 运行急停 | 撤销导航运动目标、保原4500平衡并等待站稳；IR5锁存/hold不同。界面或HTTP受理不能当作物理站稳 |
+| 界面差距 | labels.js尚缺verifying_arrival/waiting_stop/stop_unconfirmed映射，view.js会回退原phase字符串；本轮仅记录，未修改代码。Web地图上传/隔离预览也没有小程序入口 |
+
+Web在10月27日已补浏览器HLS代理，旧/video/hls的404保留为历史问题，不当作当前全局状态。两端仍共享MediaMTX robot/front，新增观看只增加云出口，不重新打开相机/重复推理或编码，不经过FPGA。
+
+总体介绍已更新到[系统架构](https://github.com/LRaina215/SOC_FPGA_NAV/blob/codex/integration-g2-20261022/docs/system_architecture.md)。证据见[PNR61签核](https://github.com/LRaina215/SOC_FPGA_NAV/blob/codex/integration-g2-20261022/docs/4_design/g2_PNR61_signoff_20261027.md)、[Web真链路](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/docs/REAL_FPGA_INTEGRATION_20261027.md)、[地图上传](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/docs/MAP_UPLOAD_20261027.md)。基础真机验收由用户此前确认，不能外推到新增视频/真实FPGA闭环。
+
+本次只更新README和维护记录；保留project.private.config.json、tests/preview/snapshot.json原有改动，不纳入提交。没有为纯文档重跑模型、视频或运动回归；仅检查文档与链接。
+
+## 历史结论（2026-10-25）
 
 - 开发者工具已正常重启，四页基础界面与只读链路已验收；地图、真实相机图片及视图切换均已在模拟器中查看。
 - 连接切换隔离、相机请求隔离、画面过期提示和地图叠层已修复，必要的本地检查通过。详细范围见末尾本轮验收记录。
