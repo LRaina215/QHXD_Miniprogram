@@ -1,5 +1,9 @@
 # 云拓小程序维护记录
 
+## 2026-10-28 文档整理
+
+README 调整为项目介绍与使用说明，包含页面、语音、视频、接口和开发入口；阶段测试与发布结果继续保留在本记录。代码链接指向各维护分支。此次为文档变更，检查链接和 Markdown 差异，未重复运行设备测试。
+
 ## 当前结论（2026-10-27，跨仓库文档对账）
 
 本轮用户要求跟进全部进度、更新总体架构和相关文档并推送；只读取相关会话、源码及公网查询，不执行微信编译、手机控制测试、服务重启或FPGA操作。整车执行顺序仍只在导航总计划，本页不另立规划。
@@ -16,7 +20,7 @@
 
 Web在10月27日已补浏览器HLS代理，旧/video/hls的404保留为历史问题，不当作当前全局状态。两端仍共享MediaMTX robot/front，新增观看只增加云出口，不重新打开相机/重复推理或编码，不经过FPGA。
 
-总体介绍已更新到[系统架构](https://github.com/LRaina215/SOC_FPGA_NAV/blob/codex/integration-g2-20261022/docs/system_architecture.md)。证据见[PNR61签核](https://github.com/LRaina215/SOC_FPGA_NAV/blob/codex/integration-g2-20261022/docs/4_design/g2_PNR61_signoff_20261027.md)、[Web真链路](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/docs/REAL_FPGA_INTEGRATION_20261027.md)、[地图上传](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/docs/MAP_UPLOAD_20261027.md)。基础真机验收由用户此前确认，不能外推到新增视频/真实FPGA闭环。
+总体介绍已更新到[系统架构](https://github.com/LRaina215/SOC_FPGA_NAV/blob/main/docs/system_architecture.md)。证据见[PNR61签核](https://github.com/LRaina215/SOC_FPGA_NAV/blob/main/docs/4_design/g2_PNR61_signoff_20261027.md)、[Web真链路](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/docs/REAL_FPGA_INTEGRATION_20261027.md)、[地图上传](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/docs/MAP_UPLOAD_20261027.md)。基础真机验收由用户此前确认，不能外推到新增视频/真实FPGA闭环。
 
 本次只更新README和维护记录；保留project.private.config.json、tests/preview/snapshot.json原有改动，不纳入提交。没有为纯文档重跑模型、视频或运动回归；仅检查文档与链接。
 

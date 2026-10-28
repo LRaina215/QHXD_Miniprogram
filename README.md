@@ -1,127 +1,92 @@
 # 云拓 · 微信小程序
 
-云拓（多模态复杂地形轮腿机器人）的移动端控制台。和 Web 控制台共用同一套后端契约与设计语言：
-看机器人在哪、在做什么、FPGA 平台是否正常，下发视觉任务 / 定点 / 巡检，用语音或文字指挥，随时急停。
+云拓轮腿机器人的移动端控制台，用于查看机器人位置、任务、视频和设备状态，发起找物、跟随、定点与巡检，并通过文字或语音与任务引擎交互。
 
-当前接手状态、验证范围与遗留事项见 [MAINTENANCE.md](MAINTENANCE.md)；后续开发约定见 [AGENTS.md](AGENTS.md)。
+小程序与 Web 共用 RK3588 后端，通过 HTTPS / WebSocket 访问云网关。任务由 RK 编排并交给 FPGA 导航与轮腿控制执行，状态沿同一业务链路返回。
 
-**2026-10-27系统对账：** 整体设计见[总体架构](https://github.com/LRaina215/SOC_FPGA_NAV/blob/codex/integration-g2-20261022/docs/system_architecture.md)。当前下游选择PNR61 / SLF128 / 双串口，RK现役Qwen3-1.7B、真实来源桥接和Web地图上传/预览已部署。22:01只读公网为网关/RK在线、real、任务idle，FPGA导航/遥测offline；最近板上收尾为hold，不以real标签推定真实运动可用。本轮仅文档，不改变连接配置、设备状态或微信发布。
+[项目总览](https://github.com/LRaina215/Yuntuo/tree/main) · [总体架构](https://github.com/LRaina215/SOC_FPGA_NAV/blob/main/docs/system_architecture.md) · [维护记录](MAINTENANCE.md)
 
-用户确认过基础真机验收；新增HLS/手机启动与缓冲修复在b8ed624，未取得新微信代码包发布及新版手机完整验收记录。源码中也尚未补齐`verifying_arrival`、`waiting_stop`、`stop_unconfirmed`三个phase的中文映射，可能回显英文阶段码；任务detail仍直接来自共享后端。小程序当前仅显示地图，没有Web新增的地图文件上传/隔离预览入口。
+## 页面与功能
 
-```text
-微信小程序 ──HTTPS / WSS──> api.lingxunrobot.cn（/api/ 与 /ws/）
-          ──> Cloud Gateway ──> RK3588 FastAPI
+| 页面 | 功能 |
+|---|---|
+| 总览 | 链路与当前任务、场地图、车载视频、视觉目标、FPGA 平台数据和事件 |
+| 任务 | 按类别与颜色找物、人员跟随、定点移动、巡检路线及任务时间线 |
+| 助手 | 文字输入、按住说话、助手回复与运动指令确认 |
+| 我的 | 访问令牌、服务地址、连接诊断、告警和运行模式 |
 
-仅执行导航 / 控制任务时，后端继续下发：
-RK3588 FastAPI ──> fpga_bridge ──CH导航＋P11-40遥测──> FPGA
-```
+当前任务卡提供暂停、继续、取消与返航操作。全局停止按钮请求撤销导航运动目标并保持平衡，执行进展由后端反馈。
 
-小程序只通过网关访问 RK3588 后端接口，不直接连接 FPGA。助手解析、相机感知和业务接口由 RK3588 处理；FPGA 是运动任务的下游执行与反馈端。后端的“实车模式”也可以配合 mock FPGA 调试，不能据此判断已接真实板卡。
+## 语音与视频
 
-小程序的按住说话使用当前手机（开发者工具中为电脑）的麦克风，经 WechatSI 识别后向 RK3588 发送文字。接在 RK3588 上的车载麦克风走独立的板载录音 / 识别接口；两者需分别验收。Web / RK3588 会话后续已报告 USB 音响接入与播报通过；这是该会话的交付记录，不代表本小程序已完成手机录音或手机到车载播报的验收。
+按住说话使用手机麦克风，通过 WechatSI 转写后将文字发送到 RK3588。文字和语音共用任务解析服务，运动类意图在确认面板中展示目标与动作。
 
-### 与 Web 端的视频差距（2026-10-26）
-
-状态数据已与 Web 一样使用 WebSocket 推送，断线时由 REST 兜底。当前源码使用 HLS 连续视频：有 Token 时请求限时播放地址，使用微信 `<video>` 播放；连接期间、未配置 Token 或播放失败时，每 2 秒请求一张检测图片。新网关接口已部署，开发者工具已通过实际公网播放。针对手机一直显示连接中的问题，已补手动播放、原生启动事件及缓冲恢复处理；本轮修复尚未上传微信代码包，手机兼容仍待验证。
-
-Web 的 `CloudVideoPlayer.vue` 使用 WebRTC / WHEP，代码保留 HLS 和检测图片流回退。小程序复用同一云端 MediaMTX 视频源，通过 HLS 播放；不是照搬浏览器 WebRTC。视频由 RK3588 推到云端，不经过 FPGA；两个观看端各建连接，不需要再开相机或重复编码，会增加云端出口流量。HLS 延迟和手机兼容仍需单独验收。
-
-10月25日旧`/video/hls/`公网路径曾返回404；Web侧10月27日已补浏览器HLS代理，不能沿用旧结论判断当前全局视频。小程序仍使用已部署的`/api/video/miniprogram/session`，用原Bearer Token换同一API域名的限时HLS地址，逐次校验清单/分片，不依赖共享Cookie或把长期Token交给播放器。10月26日Android清单/分片200记录不支持直接归因为缺少域名，亦不证明每一终端已成功解码。新版手机结果仍待独立验收。
+车载视频使用 HLS，与 Web 共用云端 MediaMTX 的 `robot/front` 流。小程序通过限时播放会话获取同源地址，支持手动播放、加载提示、缓冲恢复和切页释放；连接失败时回退到检测图片。任务与导航状态通过 WebSocket 推送，REST 查询补充更新。
 
 ## 快速开始
 
-1. 微信开发者工具打开仓库根目录（`miniprogramRoot` 为 `miniprogram/`，AppID 见 `project.config.json`）。
-2. 微信公众平台 → 开发管理 → 服务器域名，配置：
+1. 使用微信开发者工具打开仓库根目录，项目入口为 `project.config.json`，源码目录为 `miniprogram/`。
+2. 在微信公众平台配置服务器域名：
 
    | 类型 | 域名 |
-   | --- | --- |
+   |---|---|
    | request | `https://api.lingxunrobot.cn`、`https://lingxunrobot.cn` |
    | socket | `wss://api.lingxunrobot.cn`、`wss://lingxunrobot.cn` |
    | downloadFile | `https://api.lingxunrobot.cn`、`https://lingxunrobot.cn` |
 
-   本项目 AppID 为 `wx1f68b56b794572da`。2026-10-23 用户补登记网站主域名后，开发者工具刷新已确认上述三项均保留两个域名。默认继续使用 API 子域名，旧发布包使用的主域名也已有登记。开发者工具关闭校验不会替正式版登记域名，发布前应核对实际登记值。
-3. 编译运行。总览、地图、相机检测图片、事件这些只读内容不需要 Token；连续视频需要 Token 换取播放地址。
-4. 助手对话、下发任务、急停都是 POST，网关要求 Token：在「我的 → 访问 Token」里填入公网 Token
-   （与 Cloud Gateway 的 `PUBLIC_API_TOKEN` 一致）。Token 只存在本机缓存，不要写进代码或文档。
+3. 编译运行。默认服务地址为 `https://api.lingxunrobot.cn`。
+4. 在“我的 → 访问 Token”填写网关访问令牌，用于助手、任务操作和连续视频会话。
 
-调试时可在「我的 → 调试」把服务地址改成局域网 RK3588（如 `http://192.168.x.x:8000`），
-开发者工具中联调局域网地址时按需配置；清空即恢复 `https://api.lingxunrobot.cn`。旧版缓存的公网主域名会兼容映射到 API 子域名，自定义局域网地址保留。
-
-已安装的旧手机版本若仍请求 `https://lingxunrobot.cn`，可先在「我的 → 调试」填写 `https://api.lingxunrobot.cn` 并点击「应用地址」，使用已经登记的接口域名；此入口不需要等待新代码包发布。修改后回总览复测，不能以电脑连通代替手机结果。
-
-## 页面
-
-| Tab | 内容 |
-| --- | --- |
-| 总览 | 链路状态（网关 / RK3588 / 实时推送 / FPGA）、当前任务卡（暂停 / 继续 / 取消 / 返航）、场地图与相机画面、FPGA 平台数据、视觉目标、最近事件 |
-| 任务 | 视觉任务（选类别 + 颜色：寻找并停在旁边 / 跟随我）、定点前往、巡检路线、任务事件时间线 |
-| 助手 | 按住说话（微信同声传译）或文字输入 → 智能助手；运动类指令弹出确认后才执行 |
-| 我的 | 连接诊断、控制令牌、模拟 / 实车模式切换、告警、调试地址 |
-
-全局组件：`estop-fab`（右下角运行急停，按下立即请求停止导航目标并保留平衡，解除需确认）、`confirm-sheet`（运动指令确认底板）。接口受理不代表物理站稳，IR5锁存与hold镜像不是同一条停止路径。
+局域网调试时，可在“我的 → 调试”设置 RK3588 后端地址，例如 `http://192.168.x.x:8000`。访问令牌仅保存在本机缓存中。
 
 ## 代码结构
 
 ```text
 miniprogram/
-  app.js / app.json / app.wxss   入口、tabBar、设计令牌（与 Web 控制台同一套）
-  utils/config.js                服务地址、Token 缓存键、刷新周期
-  utils/api.js                   REST 客户端，网关拒绝原因翻译成中文
-  utils/socket.js                带心跳与退避重连的 WebSocket
-  utils/store.js                 全局数据仓库：WS 优先，断线或过期时 REST 兜底
-  utils/view.js / labels.js      页面视图模型与中文标签
-  utils/fieldMap.js              Canvas 2D 场地图（栅格、航点、轨迹、目标、机器人视野）
-  utils/cameraVideo.js           限时 HLS 会话、续期、播放进度与故障回退
-  utils/actions.js               运动指令确认内容与执行
-  components/                    confirm-sheet、estop-fab
-  pages/                         home、mission、assistant、me
-  assets/                        品牌图、tab 与功能图标
-tests/                           本地模拟测试（不打包进小程序）
+  app.js / app.json / app.wxss   应用入口、页面与样式
+  utils/config.js               服务地址与刷新配置
+  utils/api.js                  REST 请求
+  utils/socket.js               WebSocket 与重连
+  utils/store.js                状态订阅与查询补充
+  utils/view.js / labels.js      页面数据与中文标签
+  utils/fieldMap.js              栅格、航点、轨迹和目标绘制
+  utils/cameraVideo.js           视频会话、续期与故障恢复
+  utils/actions.js              任务操作
+  components/                   确认面板与停止按钮
+  pages/                        总览、任务、助手、我的
+  assets/                       品牌与界面资源
+tests/                          本地测试与页面预览
 ```
 
 ## 后端接口
 
-读：`/api/state/latest`、`/api/navigation/latest`、`/api/navigation/map/metadata`、`/api/navigation/map/image`、
-`/api/waypoints`、`/api/tasks/events`、`/api/alerts`、`/api/perception/latest_frame`、`/api/gateway/health`，
-实时：`/ws/state`、`/ws/navigation`。
+| 类别 | 接口 |
+|---|---|
+| 状态与导航 | `/api/state/latest`、`/api/navigation/latest`、`/ws/state`、`/ws/navigation` |
+| 地图与航点 | `/api/navigation/map/metadata`、`/api/navigation/map/image`、`/api/waypoints` |
+| 视觉与视频 | `/api/perception/latest_frame`、`/api/video/miniprogram/session` |
+| 任务 | `/api/mission/{go_to_waypoint,start_patrol,search_target,follow_target,pause,resume,cancel,return_home}` |
+| 助手与停止 | `/api/voice/smart_command`、`/api/voice/confirm_command`、`/api/platform/estop` |
+| 事件与诊断 | `/api/tasks/events`、`/api/alerts`、`/api/gateway/health` |
 
-写（需 `Authorization: Bearer <Token>`）：`/api/mission/{go_to_waypoint, start_patrol, search_target, follow_target, pause, resume, cancel, return_home}`、
-`/api/platform/estop`、`/api/voice/smart_command`、`/api/voice/confirm_command`、`/api/system/mode/switch`。
+写请求使用 Bearer Token，公网运动操作同时受网关控制开关管理。确认面板有效窗口为 30 秒，切页或更换连接后重新发起；未完成的重复请求会合并，超时后通过任务状态核对结果。
 
-运动类指令还要求网关开启公网控制（`PUBLIC_CONTROL_ENABLED`）。网关返回的拒绝原因会直接显示给用户。
+接口实现见 [RK/Web 仓库](https://github.com/LRaina215/QHXD_Web/tree/yuntuo-fpga)，视频接入见[小程序视频接口](https://github.com/LRaina215/QHXD_Web/blob/yuntuo-fpga/cloud_gateway/MINIPROGRAM_VIDEO.md)。
 
-确认面板的本地有效窗口为 30 秒，离开页面或更换服务地址 / Token 后需重新发起；后端仍独立校验语音命令是否过期。相同的未完成写请求会合并，超时或断网后不会自动重试，也不会将“未收到结果”说成“未执行”；应先在总览核对实际任务状态。已发送的命令不会因切页而撤回。
+## 开发与测试
 
-依赖新版 Cloud Gateway（QHXD_Web `yuntuo-fpga` 分支）的两处：
-- `/api/gateway/health`：主域名只转发 `/api/`，网关健康要从这里取；旧网关上会回退到 `/health`，「公网运动控制」显示为未知。
-- `/api/platform/estop`：旧网关白名单没有它，急停会回退为取消当前任务。
-
-## 测试
-
-测试运行时需要提供全局 `fetch` 和 `WebSocket`。本次维护使用 Node 24.20.0；低版本 Node 不一定具备这两项，不依赖微信开发者工具。
+本地测试使用具备全局 `fetch` 和 `WebSocket` 的 Node.js 环境；维护环境为 Node 24。
 
 ```bash
-node tests/static-check.js           # JSON、页面文件、WXML 配对、事件方法、图片资源
-node tests/live-safety.js            # 公网测试的失败收尾保护；纯本地模拟，不连接设备
-node tests/store-lifecycle.js        # 服务器切换、迟到响应与离线状态；纯本地模拟
-node tests/camera.js                 # 图片错误解析、过期提示与相机轮询隔离；纯本地模拟
-node tests/camera-video.js           # 连续视频、手机启动事件、缓冲恢复与切页隔离；9 组纯本地
-node tests/command-errors.js         # 鉴权、超时、防重复、确认过期与页面离开；20 组纯本地检查
-node tests/release-network.js         # 默认域名、旧缓存兼容及连接错误显示；纯本地
-node tests/smoke.js [地址]             # 只读冒烟，默认 api.lingxunrobot.cn
-node tests/e2e.js [后端地址]          # 默认 http://127.0.0.1:8000，会下发运动指令，只对本机模拟链路跑
-YUNTUO_TOKEN=... node tests/live.js  # 公网控制链路：板载大模型助手、确认 / 取消、暂停继续、急停；仅 FPGA 为 mock 且空闲时运行
-node tests/preview/render.js         # 生成 tests/preview/out/*.html 版式预览
+node tests/static-check.js
+node tests/store-lifecycle.js
+node tests/camera.js
+node tests/camera-video.js
+node tests/command-errors.js
+node tests/release-network.js
+node tests/preview/render.js
 ```
 
-`e2e.js` 用 `tests/wx-sim.js` 模拟 wx 运行时，跑真实的页面逻辑；后端用 QHXD_Web 的
-`scripts/start_yuntuo_sim.sh` 起本机模拟链路（backend + fpga_bridge + mock_fpga，实车模式，Token `local-test-token`）。
-覆盖：实时推送 → 总览渲染 → 语音「找到红色水瓶」确认执行到完成 → 定点 → 按住说话「暂停」→ 取消 → 急停与解除。
+`tests/e2e.js` 配合 RK/Web 的本机模拟服务测试任务流程；`tests/live.js` 会发出操作请求，运行前按脚本要求检查目标环境。开发约定见 [AGENTS.md](AGENTS.md)，手机测试、发布与问题记录见 [MAINTENANCE.md](MAINTENANCE.md)。
 
-预览渲染器只支持本项目用到的 WXML 子集，用于检查版式，不能替代开发者工具和真机验收。
-
-## 其他
-
-- `cloudfunctions/quickstartFunctions` 是开发者工具模板留下的云函数，小程序未调用。
-- 图标来自 [Lucide](https://lucide.dev)（ISC License）。
+界面图标使用 [Lucide](https://lucide.dev)（ISC License）。

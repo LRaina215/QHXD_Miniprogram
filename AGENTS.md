@@ -32,3 +32,7 @@
 - Node 模拟与 HTML 预览不等于微信开发者工具编译、真机语音或真实 FPGA 验收。报告中写清实际完成的验证。
 - 发布网络入口使用后台已登记的 `api.lingxunrobot.cn`。改默认地址前应核对该 AppID 刷新后的 request / socket / downloadFile 列表；不能凭本机 `urlCheck=false` 的连通性认定发布可用。域名与旧地址兼容检查为 `node tests/release-network.js`。
 - 维护完成后在 `MAINTENANCE.md` 更新结论、未解决项和必要验证，保持后续交接可继续。
+
+## 文档表达
+
+README 介绍页面功能、连接方式、接口和开发入口。测试、发布和交接过程写入 MAINTENANCE.md；设计与使用说明采用直接的技术说明口吻。跨仓库导航链接指向维护分支。
